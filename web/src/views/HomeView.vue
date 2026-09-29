@@ -7,6 +7,7 @@ import LogoMark from '@/components/ui/LogoMark.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { ApiError, api } from '@/lib/api'
 import { rememberNext } from '@/lib/next'
+import { SUPPORT_EMAIL, X_HANDLE, X_URL } from '@/lib/brand'
 import { toast } from '@/lib/toast'
 
 const RESEND_COOLDOWN_SECONDS = 30
@@ -177,6 +178,15 @@ async function useDifferentEmail() {
         <IssueSpecimen />
       </aside>
     </main>
+
+    <footer class="container home__foot">
+      <p>
+        Need help? Tweet at us
+        <a :href="X_URL" target="_blank" rel="noopener" class="text-link">@{{ X_HANDLE }}</a>
+        or email
+        <a :href="`mailto:${SUPPORT_EMAIL}`" class="text-link">{{ SUPPORT_EMAIL }}</a>.
+      </p>
+    </footer>
   </div>
 </template>
 
@@ -199,6 +209,18 @@ async function useDifferentEmail() {
   gap: 10px;
   font: 600 21px/1 var(--font-serif);
   letter-spacing: -0.015em;
+}
+
+.home__foot {
+  padding-bottom: 32px;
+  color: var(--ink-3);
+  font-size: 13.5px;
+}
+
+/* Rule on the text, not the container, so it lines up with the content edge. */
+.home__foot p {
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
 }
 
 .home__grid {

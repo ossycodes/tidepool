@@ -168,7 +168,12 @@ async function refollow(blog: Blog) {
         <h1 class="masthead__title">Reading list</h1>
       </div>
 
-      <div v-if="user" class="issue" :class="{ 'is-paused': !nextIssue }">
+      <RouterLink
+        v-if="user"
+        :to="nextIssue ? '/issue' : '/settings'"
+        class="issue"
+        :class="{ 'is-paused': !nextIssue }"
+      >
         <p class="eyebrow">
           Next issue<span v-if="issueNumber && nextIssue" class="tabular">
             · No. {{ issueNumber }}</span
@@ -182,7 +187,7 @@ async function refollow(blog: Blog) {
           <p class="issue__when">Paused</p>
           <p class="issue__rel">Digests are turned off</p>
         </template>
-      </div>
+      </RouterLink>
     </header>
     <div class="double-rule" />
 
@@ -279,7 +284,17 @@ async function refollow(blog: Blog) {
 }
 
 .issue {
+  display: block;
+  margin: -8px -10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
   text-align: right;
+  transition-property: background-color;
+  transition-duration: 150ms;
+}
+
+.issue:hover {
+  background: var(--paper-sunken);
 }
 
 .issue__when {

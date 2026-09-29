@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import LogoMark from '@/components/ui/LogoMark.vue'
 
-const links = [{ to: '/reading', label: 'Reading list' }]
+const links = [
+  { to: '/reading', label: 'Reading list' },
+  { to: '/issue', label: 'Next issue' },
+  { to: '/settings', label: 'Settings' },
+]
 </script>
 
 <template>
