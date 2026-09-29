@@ -467,13 +467,44 @@ async function useDifferentEmail() {
   }
 }
 
+/* Stacked on phones: the joined pill reads as cramped, so the input and
+   button become separate pieces with room between them. */
 @media (max-width: 480px) {
-  .signin__row {
+  .signin__row,
+  .signin__row:focus-within {
     flex-direction: column;
+    gap: 10px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .signin__row input {
+    /* flex: 1 from the row layout would squash the height in a column. */
+    flex: none;
+    height: 50px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 12px;
+    background: var(--paper-raised);
+    box-shadow: var(--shadow-1);
+    transition-property: border-color, box-shadow;
+    transition-duration: 150ms;
+  }
+
+  .signin__row input:focus-visible {
+    border-color: var(--tide);
+    box-shadow: var(--ring);
+  }
+
+  .signin__row.has-error input {
+    border-color: var(--rose);
   }
 
   .signin__row :deep(.btn) {
     width: 100%;
+    height: 50px;
+    border-radius: 12px;
   }
 }
 </style>
