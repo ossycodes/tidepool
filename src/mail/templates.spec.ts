@@ -2,6 +2,8 @@ import { digestEmail, escapeHtml, magicLinkEmail } from './templates.js';
 
 describe('digestEmail', () => {
   const input = {
+    issueNumber: 12,
+    issueDate: new Date('2025-09-29T08:00:00Z'),
     timezone: 'UTC',
     settingsUrl: 'https://app.test/settings',
     unsubscribeUrl: 'https://api.test/digests/unsubscribe?token=t',
@@ -23,10 +25,24 @@ describe('digestEmail', () => {
     ],
   };
 
-  it('counts posts and blogs in the subject', () => {
+  it('numbers the issue and counts posts and blogs in the subject', () => {
     expect(digestEmail(input).subject).toBe(
-      'Your weekly digest: 2 new posts from 1 blog',
+      'Tidepool No. 12: 2 new posts from 1 blog',
     );
+  });
+
+  it('shows the issue number and local date in the masthead', () => {
+    const { html } = digestEmail(input);
+    expect(html).toContain('No. 12 · Monday, September 29');
+    expect(html).toContain('one.test');
+  });
+
+  it('marks test sends as previews', () => {
+    const email = digestEmail({ ...input, preview: true });
+    expect(email.subject).toBe(
+      'Preview · Tidepool No. 12: 2 new posts from 1 blog',
+    );
+    expect(email.html).toContain('Preview · Monday, September 29');
   });
 
   it('escapes feed content in the html part', () => {
@@ -39,7 +55,7 @@ describe('digestEmail', () => {
 
   it('includes posts and footer links in the text part', () => {
     const { text } = digestEmail(input);
-    expect(text).toContain('## Blog <One>');
+    expect(text).toContain('Blog <One>\n----------');
     expect(text).toContain('https://one.test/b');
     expect(text).toContain(
       'Unsubscribe: https://api.test/digests/unsubscribe?token=t',

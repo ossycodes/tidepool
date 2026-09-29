@@ -125,7 +125,10 @@ export class DigestService {
     if (sections.length === 0) return 'empty';
 
     try {
-      await this.deliver(user, sections);
+      await this.deliver(user, sections, {
+        issueNumber: await this.nextIssueNumber(userId),
+        issueDate: now,
+      });
     } catch (err) {
       // Release the claim so the job's retry can send it.
       await this.prisma.user.updateMany({
@@ -158,8 +161,17 @@ export class DigestService {
     const { sections } = await this.preview(userId);
     const postCount = sections.reduce((n, s) => n + s.posts.length, 0);
     if (postCount === 0) return { sent: false, postCount };
-    await this.deliver(user, sections);
+    await this.deliver(user, sections, {
+      issueNumber: await this.nextIssueNumber(userId),
+      issueDate: new Date(),
+      preview: true,
+    });
     return { sent: true, postCount };
+  }
+
+  /** Issues are numbered per reader: the first digest they receive is No. 1. */
+  private async nextIssueNumber(userId: string): Promise<number> {
+    return (await this.prisma.digest.count({ where: { userId } })) + 1;
   }
 
   /** Returns the user id, or null for an invalid token. */
@@ -187,7 +199,11 @@ export class DigestService {
     }
   }
 
-  private async deliver(user: User, sections: DigestSection[]) {
+  private async deliver(
+    user: User,
+    sections: DigestSection[],
+    issue: { issueNumber: number; issueDate: Date; preview?: boolean },
+  ) {
     const payload: UnsubscribePayload = { sub: user.id, typ: 'unsubscribe' };
     const token = await this.jwt.signAsync(payload, {
       expiresIn: UNSUBSCRIBE_TOKEN_TTL_SECONDS,
@@ -210,6 +226,7 @@ export class DigestService {
           siteUrl: s.blog.siteUrl,
           posts: s.posts,
         })),
+        ...issue,
         timezone: user.timezone,
         settingsUrl,
         unsubscribeUrl: unsubscribeUrl.toString(),
