@@ -27,16 +27,16 @@ const blog = (overrides: Partial<Blog> = {}): Blog => ({
   ...overrides,
 })
 
-async function mountReading() {
+async function mountReading(path = '/') {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [{ path: '/', component: ReadingView }],
   })
-  await router.push('/')
+  await router.push(path)
   await router.isReady()
   const wrapper = mount(ReadingView, { global: { plugins: [router] } })
   await flushPromises()
-  return wrapper
+  return { wrapper, router }
 }
 
 describe('ReadingView', () => {
@@ -47,7 +47,7 @@ describe('ReadingView', () => {
 
   it('shows suggestions when nothing is followed yet', async () => {
     vi.spyOn(api, 'blogs').mockResolvedValue([])
-    const wrapper = await mountReading()
+    const { wrapper } = await mountReading()
     expect(wrapper.text()).toContain('Nothing to read yet.')
     expect(wrapper.findAll('.chip').length).toBeGreaterThan(0)
   })
@@ -55,7 +55,7 @@ describe('ReadingView', () => {
   it('follows a blog and adds it to the list', async () => {
     vi.spyOn(api, 'blogs').mockResolvedValue([])
     const follow = vi.spyOn(api, 'followBlog').mockResolvedValue(blog())
-    const wrapper = await mountReading()
+    const { wrapper } = await mountReading()
 
     await wrapper.find('input[aria-label="Blog address"]').setValue('jvns.ca')
     await wrapper.find('form').trigger('submit')
@@ -71,7 +71,7 @@ describe('ReadingView', () => {
     vi.spyOn(api, 'followBlog').mockRejectedValue(
       new ApiError(422, "Couldn't find a feed or any posts on that page"),
     )
-    const wrapper = await mountReading()
+    const { wrapper } = await mountReading()
 
     await wrapper.find('input[aria-label="Blog address"]').setValue('example.com')
     await wrapper.find('form').trigger('submit')
@@ -80,9 +80,23 @@ describe('ReadingView', () => {
     expect(wrapper.find('#add-status').text()).toContain("We couldn't find any posts there")
   })
 
+  it('follows a blog passed by quick add, then clears it from the URL', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([])
+    const follow = vi
+      .spyOn(api, 'followBlog')
+      .mockResolvedValue(blog({ id: 'b2', title: 'Schneems' }))
+    const { wrapper, router } = await mountReading('/?follow=www.schneems.com')
+    await flushPromises()
+
+    expect(follow).toHaveBeenCalledTimes(1)
+    expect(follow).toHaveBeenCalledWith('www.schneems.com')
+    expect(wrapper.find('.row__title').text()).toBe('Schneems')
+    expect(router.currentRoute.value.query.follow).toBeUndefined()
+  })
+
   it('labels blogs that have no feed', async () => {
     vi.spyOn(api, 'blogs').mockResolvedValue([blog({ fetchMode: 'SCRAPE' })])
-    const wrapper = await mountReading()
+    const { wrapper } = await mountReading()
     expect(wrapper.find('.tag').text()).toContain('Watching page')
   })
 })

@@ -4,12 +4,12 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { ApiError, api } from '@/lib/api'
 import HomeView from '@/views/HomeView.vue'
 
-async function mountHome() {
+async function mountHome(path = '/') {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [{ path: '/', component: HomeView }],
   })
-  await router.push('/')
+  await router.push(path)
   await router.isReady()
   return mount(HomeView, { global: { plugins: [router] }, attachTo: document.body })
 }
@@ -17,6 +17,15 @@ async function mountHome() {
 describe('HomeView', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+  })
+
+  it('tells signed-out quick-add visitors what will happen', async () => {
+    const next = encodeURIComponent('/reading?follow=https://www.schneems.com/')
+    const wrapper = await mountHome(`/?next=${next}`)
+    expect(wrapper.find('.pending').text()).toBe(
+      "Sign in and we'll follow www.schneems.com for you.",
+    )
+    wrapper.unmount()
   })
 
   it('asks for an email before sending', async () => {

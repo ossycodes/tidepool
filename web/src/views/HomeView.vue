@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { CalendarClock, Inbox, MailCheck, Rss } from '@lucide/vue'
-import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { CalendarClock, Inbox, MailCheck, Plus, Rss } from '@lucide/vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import { useRoute } from 'vue-router'
 import IssueSpecimen from '@/components/IssueSpecimen.vue'
 import LogoMark from '@/components/ui/LogoMark.vue'
@@ -22,6 +22,18 @@ let timer: ReturnType<typeof setInterval> | undefined
 
 onMounted(() => {
   if (typeof route.query.next === 'string') rememberNext(route.query.next)
+})
+
+// Set when a signed-out visitor used quick add (tidepool.example/some-blog.com).
+const pendingFollow = computed(() => {
+  const next = route.query.next
+  if (typeof next !== 'string') return null
+  try {
+    const follow = new URL(next, window.location.origin).searchParams.get('follow')
+    return follow ? follow.replace(/^https?:\/\//i, '').replace(/\/$/, '') : null
+  } catch {
+    return null
+  }
 })
 onBeforeUnmount(() => clearInterval(timer))
 
@@ -96,6 +108,11 @@ async function useDifferentEmail() {
         <p class="intro__lede">
           Add any blog, even the ones without an RSS feed. Once a week, Tidepool sends a single,
           quiet email with everything new.
+        </p>
+
+        <p v-if="pendingFollow" class="pending">
+          <Plus :size="15" />
+          <span>Sign in and we'll follow <strong>{{ pendingFollow }}</strong> for you.</span>
         </p>
 
         <Transition name="swap" mode="out-in">
@@ -220,6 +237,35 @@ async function useDifferentEmail() {
 
 .signin {
   margin-top: 36px;
+}
+
+.pending {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 32px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--tide-soft);
+  color: var(--ink-2);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.pending svg {
+  flex: none;
+  margin-top: 3px;
+  color: var(--tide);
+}
+
+.pending strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.pending + .signin,
+.pending + .sent {
+  margin-top: 16px;
 }
 
 .signin__row {

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { Plus } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AddBlogForm from '@/components/AddBlogForm.vue'
 import BlogRow from '@/components/BlogRow.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { ApiError, api, type Blog } from '@/lib/api'
 import { postDate, timeUntil } from '@/lib/format'
+import { quickAddPrefix } from '@/lib/quickAdd'
 import { issueTimeLabel, nextIssueAt } from '@/lib/schedule'
 import { session } from '@/lib/session'
 import { toast } from '@/lib/toast'
@@ -60,7 +62,20 @@ async function load() {
   }
 }
 
-onMounted(load)
+const route = useRoute()
+const router = useRouter()
+const quickAddExample = `${quickAddPrefix()}jvns.ca`
+
+onMounted(async () => {
+  await load()
+  // Arrived via quick add (tidepool.example/some-blog.com): follow it now.
+  const pending = typeof route.query.follow === 'string' ? route.query.follow : null
+  if (!pending) return
+  await router.replace({ query: {} }) // so a refresh doesn't add it again
+  if (loadError.value) return
+  url.value = pending
+  await follow(pending)
+})
 
 function followErrorMessage(err: unknown): string {
   if (!(err instanceof ApiError)) return 'Something went wrong. Please try again.'
@@ -232,6 +247,12 @@ async function refollow(blog: Blog) {
         />
       </TransitionGroup>
     </section>
+
+    <p class="tip">
+      <span class="eyebrow">Quick add</span>
+      Reading a blog you like? Put <code>{{ quickAddPrefix() }}</code> in front of its address in
+      your browser to follow it, like <code>{{ quickAddExample }}</code>.
+    </p>
   </div>
 </template>
 
@@ -329,6 +350,27 @@ async function refollow(blog: Blog) {
 
 .empty {
   padding: 48px 0 16px;
+}
+
+.tip {
+  margin-top: 40px;
+  color: var(--ink-3);
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+
+.tip .eyebrow {
+  margin-right: 8px;
+}
+
+.tip code {
+  padding: 2px 6px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-xs);
+  background: var(--paper-sunken);
+  color: var(--ink-2);
+  font: 500 12.5px/1 ui-monospace, 'SF Mono', Menlo, monospace;
+  overflow-wrap: anywhere;
 }
 
 .empty__title {

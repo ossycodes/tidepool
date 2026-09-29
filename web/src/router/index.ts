@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { quickAddTarget } from '@/lib/quickAdd'
 import { onSessionExpired, session } from '@/lib/session'
 
 declare module 'vue-router' {
@@ -37,7 +38,14 @@ const router = createRouter({
         },
       ],
     },
-    { path: '/:pathMatch(.*)*', redirect: '/' },
+    {
+      // tidepool.example/www.schneems.com follows that blog; anything else goes home.
+      path: '/:pathMatch(.*)*',
+      redirect: (to) => {
+        const target = quickAddTarget(to.fullPath)
+        return target ? { name: 'reading', query: { follow: target } } : '/'
+      },
+    },
   ],
   scrollBehavior: (_to, _from, saved) => saved ?? { top: 0 },
 })
