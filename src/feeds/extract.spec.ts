@@ -4,7 +4,74 @@ import {
   findFeedLinks,
   pageMeta,
   parseFeed,
+  repairXml,
 } from './extract.js';
+
+describe('repairXml', () => {
+  it('escapes bare ampersands but leaves entities and CDATA alone', () => {
+    expect(
+      repairXml(
+        '<a title="Buns & Bits &amp; &#38; &#x26; &lt;">x</a><![CDATA[a & b]]>',
+      ),
+    ).toBe(
+      '<a title="Buns &amp; Bits &amp; &#38; &#x26; &lt;">x</a><![CDATA[a & b]]>',
+    );
+  });
+});
+
+describe('parseFeed with invalid XML', () => {
+  // Real-world shape: schneems.com's feed has title="Cinnamon Buns & Commit Bits".
+  const sloppy = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Sloppy & Friends</title>
+  <entry>
+    <title>Cinnamon Buns</title>
+    <link href="https://blog.example/buns" rel="alternate" title="Cinnamon Buns & Commit Bits" />
+    <summary><![CDATA[Flour & sugar]]></summary>
+  </entry>
+</feed>`;
+
+  it('parses feeds with bare ampersands, every time', async () => {
+    for (let i = 0; i < 3; i++) {
+      const feed = await parseFeed(sloppy, 'xml', 'https://blog.example/atom');
+      expect(feed.title).toBe('Sloppy & Friends');
+      expect(feed.posts[0]).toMatchObject({
+        url: 'https://blog.example/buns',
+        summary: 'Flour & sugar',
+      });
+    }
+  });
+
+  it('falls back to loose parsing for unescaped quotes in attributes', async () => {
+    // Also from schneems.com: title="How to "Sustain Heroku"".
+    const quoted = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Quotes</title>
+  <entry>
+    <title>How to "Sustain Heroku"</title>
+    <link href="https://blog.example/heroku" rel="alternate" title="How to "Sustain Heroku"" />
+    <updated>2026-03-01T00:00:00Z</updated>
+    <author><name>Richard</name></author>
+  </entry>
+</feed>`;
+    for (let i = 0; i < 3; i++) {
+      const feed = await parseFeed(quoted, 'xml', 'https://blog.example/atom');
+      expect(feed.title).toBe('Quotes');
+      expect(feed.posts[0]).toMatchObject({
+        url: 'https://blog.example/heroku',
+        title: 'How to "Sustain Heroku"',
+      });
+    }
+  });
+
+  it('fails consistently on documents that are not feeds at all', async () => {
+    for (let i = 0; i < 3; i++) {
+      await expect(
+        parseFeed('<html><body>nope</body></html>', 'xml', 'https://x.example'),
+      ).rejects.toThrow();
+    }
+  });
+});
 
 const RSS = `<?xml version="1.0"?>
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
