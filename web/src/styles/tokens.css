@@ -1,0 +1,76 @@
+/*
+ * Tidepool design tokens.
+ * Warm paper and ink, with a sea-glass teal accent. Amber and rose are
+ * reserved for status so the accent always means "act here".
+ */
+:root {
+  color-scheme: light dark;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Newsreader Variable', ui-serif, Georgia, 'Times New Roman', serif;
+
+  --paper: #faf8f3;
+  --paper-raised: #ffffff;
+  --paper-sunken: #f2eee5;
+  --ink: #1c1b18;
+  --ink-2: #4a4740;
+  --ink-3: #7a766c;
+  --rule: #e7e2d7;
+  --rule-strong: #d5cdbd;
+
+  --tide: #0f766e;
+  --tide-strong: #0b5c56;
+  --tide-soft: #e1f0ec;
+  --on-tide: #ffffff;
+
+  --amber: #a15c07;
+  --amber-soft: #fbefd9;
+  --rose: #be123c;
+  --rose-soft: #fce8ec;
+
+  --inverse: #1c1b18;
+  --on-inverse: #f6f3ec;
+
+  --shadow-1: 0 1px 1px rgb(28 27 24 / 0.04), 0 1px 3px rgb(28 27 24 / 0.06);
+  --shadow-2: 0 1px 2px rgb(28 27 24 / 0.05), 0 10px 30px -10px rgb(28 27 24 / 0.18);
+  --shadow-sheet: 0 1px 2px rgb(28 27 24 / 0.06), 0 24px 48px -20px rgb(60 48 20 / 0.25);
+  --ring: 0 0 0 3px color-mix(in oklab, var(--tide) 32%, transparent);
+
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --container: 1080px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #151412;
+    --paper-raised: #1d1c19;
+    --paper-sunken: #100f0d;
+    --ink: #eeeae1;
+    --ink-2: #bcb6a9;
+    --ink-3: #8a8477;
+    --rule: #2b2925;
+    --rule-strong: #3b3833;
+
+    --tide: #5fb9ae;
+    --tide-strong: #82cbc1;
+    --tide-soft: #16302d;
+    --on-tide: #0a1d1b;
+
+    --amber: #e5ad58;
+    --amber-soft: #33260f;
+    --rose: #f28a9c;
+    --rose-soft: #3b1820;
+
+    --inverse: #eeeae1;
+    --on-inverse: #151412;
+
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -12px rgb(0 0 0 / 0.7);
+    --shadow-sheet: 0 1px 2px rgb(0 0 0 / 0.5), 0 24px 48px -20px rgb(0 0 0 / 0.8);
+  }
+}
