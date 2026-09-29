@@ -191,6 +191,21 @@ export function findFeedLinks(html: string, pageUrl: string): string[] {
   return [...new Set(links)];
 }
 
+/**
+ * A bot check served instead of the site: SiteGround-style "One moment,
+ * please..." pages and Cloudflare's "Just a moment..." interstitial. Matches
+ * only markers unique to the challenge; Cloudflare also injects scripts into
+ * ordinary pages, so those aren't used.
+ */
+export function isChallengePage(html: string): boolean {
+  const head = html.slice(0, 20_000);
+  return (
+    /<title>\s*(One moment, please|Just a moment)\.{0,3}\s*<\/title>/i.test(
+      head,
+    ) || /\bwsidchk\b|window\._cf_chl_opt/.test(head)
+  );
+}
+
 export function pageMeta(html: string): {
   title?: string;
   description?: string;

@@ -7,6 +7,7 @@ import {
   detectFeed,
   extractArticleLinks,
   findFeedLinks,
+  isChallengePage,
   pageMeta,
   parseFeed,
   type ParsedFeed,
@@ -46,12 +47,15 @@ export class DiscoveryService {
       page = await this.http.get(url, ACCEPT_HTML);
     } catch (err) {
       if (err instanceof HttpStatusError && BLOCKED_STATUSES.has(err.status)) {
-        return this.discoverBlocked(url);
+        return this.discoverBlocked(url, 'blocked');
       }
       throw new DiscoveryError(
         `Couldn't load ${url}: ${(err as Error).message}`,
       );
     }
+
+    if (isChallengePage(page.body))
+      return this.discoverBlocked(url, 'challenge');
 
     // The user may have pasted a feed URL directly.
     const kind = detectFeed(page.body);
@@ -101,15 +105,21 @@ export class DiscoveryService {
   }
 
   /**
-   * Some sites block their pages but still serve the feed (it's meant for
-   * readers), so try the usual feed addresses before giving up.
+   * Some sites block their pages (or put them behind a bot check) but still
+   * serve the feed, which is meant for readers, so try the usual feed
+   * addresses before giving up.
    */
-  private async discoverBlocked(url: string): Promise<DiscoveredBlog> {
+  private async discoverBlocked(
+    url: string,
+    reason: 'blocked' | 'challenge',
+  ): Promise<DiscoveredBlog> {
     const found = await this.guessFeed(url);
     const host = new URL(url).hostname.replace(/^www\./, '');
     if (!found) {
       throw new DiscoveryError(
-        `${host} blocks automated readers like Tidepool, so we can't follow it. If it has an RSS feed, try pasting the feed's address.`,
+        reason === 'challenge'
+          ? `${host} asks visitors to pass a browser check, which Tidepool can't do. Try again later, or paste its feed address.`
+          : `${host} blocks automated readers like Tidepool, so we can't follow it. If it has an RSS feed, try pasting the feed's address.`,
       );
     }
     const siteUrl = found.feed.siteUrl ?? normalizeUrl(new URL(url).origin);

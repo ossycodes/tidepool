@@ -2,6 +2,7 @@ import {
   detectFeed,
   extractArticleLinks,
   findFeedLinks,
+  isChallengePage,
   pageMeta,
   parseFeed,
   repairXml,
@@ -266,5 +267,27 @@ describe('extractArticleLinks', () => {
       'https://example.com/notes/one',
       'https://example.com/notes/two',
     ]);
+  });
+});
+
+describe('isChallengePage', () => {
+  it('spots SiteGround and Cloudflare bot checks', () => {
+    expect(
+      isChallengePage(
+        '<html><head><title>One moment, please...</title></head></html>',
+      ),
+    ).toBe(true);
+    expect(
+      isChallengePage(
+        '<html><head><title>Just a moment...</title></head></html>',
+      ),
+    ).toBe(true);
+  });
+
+  it('ignores normal pages, even with Cloudflare scripts injected', () => {
+    const page = `<html><head><title>A moment in history</title></head><body>
+      <script src="/cdn-cgi/challenge-platform/scripts/jsd/main.js"></script>
+      <article><a href="/post">Post</a></article></body></html>`;
+    expect(isChallengePage(page)).toBe(false);
   });
 });

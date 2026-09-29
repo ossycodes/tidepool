@@ -130,6 +130,29 @@ describe('DiscoveryService', () => {
     ).rejects.toThrow(/blocked\.test blocks automated readers like Tidepool/);
   });
 
+  it('explains a bot-check page instead of reporting no posts', async () => {
+    const challenge = `<!DOCTYPE html><html><head><title>One moment, please...</title>
+      <script>var wsidchk = 1;</script></head><body></body></html>`;
+    await expect(
+      discover({ 'https://checked.test/': challenge }, 'https://checked.test/'),
+    ).rejects.toThrow(/checked\.test asks visitors to pass a browser check/);
+  });
+
+  it('still uses the feed when only the page is behind a bot check', async () => {
+    const result = await discover(
+      {
+        'https://checked.test/':
+          '<html><head><title>Just a moment...</title></head></html>',
+        'https://checked.test/feed': RSS('Feed Still Works'),
+      },
+      'https://checked.test/',
+    );
+    expect(result).toMatchObject({
+      sourceUrl: 'https://checked.test/feed',
+      title: 'Feed Still Works',
+    });
+  });
+
   it('fails clearly when the page cannot be loaded', async () => {
     await expect(discover({}, 'https://blog.test/')).rejects.toThrow(
       /Couldn't load https:\/\/blog.test\//,

@@ -24,5 +24,5 @@ Both return **200 with an HTML page titled "One moment, please..."**: an obfusca
 - In production, our server's IP may be treated differently from a home connection. Recheck after deploy.
 - No alternative feed exists: `avdi.substack.com` has one "Coming soon" post from 2023, and History of the Web has no Substack or FeedBurner feed.
 
-## Small fix worth making
-Detect challenge pages (200 + `<title>One moment, please...` / `wsidchk`, or Cloudflare's "Just a moment...") and say so plainly: "This site asks visitors to pass a browser check, which Tidepool can't do. Try again later, or paste its feed address." That's better than "Couldn't find a feed or any posts".
+## Clearer message
+Discovery now detects challenge pages (`isChallengePage` in `extract.ts`): a `<title>` of "One moment, please..." or "Just a moment...", a `wsidchk` token, or `window._cf_chl_opt`. It doesn't match Cloudflare's `challenge-platform` script, which is injected into ordinary pages too. It first tries the common feed addresses, then says: "… asks visitors to pass a browser check, which Tidepool can't do. Try again later, or paste its feed address." That replaces the misleading "Couldn't find a feed or any posts".
