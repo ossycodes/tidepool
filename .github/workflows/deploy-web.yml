@@ -38,6 +38,9 @@ jobs:
       - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
+          # The action defaults to Wrangler 3, which can't deploy an
+          # assets-only Worker; match the version we deploy with locally.
+          wranglerVersion: '4.143.1'
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: web
