@@ -106,6 +106,20 @@ describe('parseFeed', () => {
     });
   });
 
+  it('strips markup from Atom html summaries', async () => {
+    const atom = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Weblog</title>
+  <entry>
+    <title>A model launch</title>
+    <link href="https://blog.example/launch" />
+    <summary type="html">&lt;p&gt;&lt;strong&gt;&lt;a href="https://x.example"&gt;New model&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt; It is   faster.</summary>
+  </entry>
+</feed>`;
+    const feed = await parseFeed(atom, 'xml', 'https://blog.example/atom');
+    expect(feed.posts[0].summary).toBe('New model It is faster.');
+  });
+
   it('parses JSON Feed, deriving a title from the content', async () => {
     const feed = await parseFeed(
       JSON_FEED,

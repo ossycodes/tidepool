@@ -60,7 +60,7 @@ describe('Digests (e2e)', () => {
 
   const mailsTo = () =>
     mail.sent.filter(
-      (m) => m.to === email && m.subject.startsWith('Your weekly digest'),
+      (m) => m.to === email && m.subject.includes('Tidepool No.'),
     );
 
   it('previews only posts that appeared after following', async () => {
@@ -99,7 +99,7 @@ describe('Digests (e2e)', () => {
   it('sends the weekly digest once, then skips until next week', async () => {
     expect(await digests.send(userId)).toBe('sent');
     const message = mailsTo().at(-1)!;
-    expect(message.subject).toBe('Your weekly digest: 1 new post from 1 blog');
+    expect(message.subject).toBe('Tidepool No. 1: 1 new post from 1 blog');
     expect(message.text).toContain(`${site}posts/new-1`);
     expect(message.headers?.['List-Unsubscribe-Post']).toBe(
       'List-Unsubscribe=One-Click',

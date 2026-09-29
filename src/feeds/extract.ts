@@ -67,7 +67,12 @@ export async function parseFeed(
     return {
       url,
       title: clean(item.title, 300) ?? url,
-      summary: clean(item.contentSnippet ?? item.summary, SUMMARY_LENGTH),
+      // contentSnippet is already plain text, but Atom <summary type="html">
+      // arrives as markup when there is no <content> to derive a snippet from.
+      summary: clean(
+        item.contentSnippet ?? htmlToText(item.summary),
+        SUMMARY_LENGTH,
+      ),
       author: clean(item.creator, 200),
       publishedAt: toDate(item.isoDate ?? item.pubDate),
     };
@@ -110,9 +115,7 @@ function parseJsonFeed(body: string, feedUrl: string): ParsedFeed {
     const url = resolveUrl(item.url ?? item.external_url, siteUrl ?? feedUrl);
     if (!url) return null;
     const text =
-      item.summary ??
-      item.content_text ??
-      (item.content_html ? cheerio.load(item.content_html).text() : undefined);
+      item.summary ?? item.content_text ?? htmlToText(item.content_html);
     return {
       url,
       title: clean(item.title, 300) ?? clean(text, 80) ?? url,
@@ -226,6 +229,10 @@ function clean(text: string | undefined, max: number): string | undefined {
   return collapsed.length > max
     ? `${collapsed.slice(0, max - 1).trimEnd()}…`
     : collapsed;
+}
+
+function htmlToText(html: string | undefined): string | undefined {
+  return html ? cheerio.load(html).text() : undefined;
 }
 
 function toDate(value: string | undefined): Date | undefined {
