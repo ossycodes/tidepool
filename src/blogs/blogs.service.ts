@@ -12,16 +12,15 @@ import {
 } from '../feeds/discovery.service.js';
 import { IngestService } from '../feeds/ingest.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { toBlogResponse, toPostResponse } from './blog.response.js';
+import {
+  latestPostFirst,
+  toBlogResponse,
+  toPostResponse,
+} from './blog.response.js';
 
 const MAX_SUBSCRIPTIONS = 500;
 /** An unfollowed blog is re-baselined if nobody has fetched it for this long. */
 const STALE_AFTER_MS = 24 * 60 * 60_000;
-
-const latestPostFirst = [
-  { publishedAt: { sort: 'desc', nulls: 'last' } },
-  { discoveredAt: 'desc' },
-] as const;
 
 @Injectable()
 export class BlogsService {

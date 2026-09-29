@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { BlogsModule } from './blogs/blogs.module.js';
 import { HttpClientModule } from './common/http-client.js';
 import { redisConnection, validateEnv, type Env } from './config/env.js';
+import { DigestModule } from './digest/digest.module.js';
 import { HealthController } from './health/health.controller.js';
 import { MailModule } from './mail/mail.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -30,6 +31,7 @@ import { UsersModule } from './users/users.module.js';
     AuthModule,
     UsersModule,
     BlogsModule,
+    DigestModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

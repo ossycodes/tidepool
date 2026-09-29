@@ -26,6 +26,83 @@ export function layout(body: string, footer = ''): string {
 </html>`;
 }
 
+export interface DigestEmailInput {
+  sections: {
+    blogTitle: string;
+    siteUrl: string;
+    posts: {
+      title: string;
+      url: string;
+      summary?: string | null;
+      author?: string | null;
+      publishedAt?: Date | null;
+    }[];
+  }[];
+  timezone: string;
+  settingsUrl: string;
+  unsubscribeUrl: string;
+}
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
+export function digestEmail(input: DigestEmailInput): RenderedEmail {
+  const postCount = input.sections.reduce((n, s) => n + s.posts.length, 0);
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      timeZone: input.timezone,
+    });
+  const meta = (post: DigestEmailInput['sections'][number]['posts'][number]) =>
+    [post.author, post.publishedAt && formatDate(post.publishedAt)]
+      .filter(Boolean)
+      .join(' · ');
+
+  const html = input.sections
+    .map(
+      (section) => `
+      <h2 style="font-size:17px;margin:24px 0 8px;"><a href="${escapeHtml(section.siteUrl)}" style="color:#1f2328;text-decoration:none;">${escapeHtml(section.blogTitle)}</a></h2>
+      ${section.posts
+        .map(
+          (post) => `
+        <div style="margin:0 0 16px;">
+          <a href="${escapeHtml(post.url)}" style="color:#0969da;font-weight:600;text-decoration:none;">${escapeHtml(post.title)}</a>
+          ${meta(post) ? `<div style="font-size:13px;color:#656d76;">${escapeHtml(meta(post))}</div>` : ''}
+          ${post.summary ? `<div style="font-size:14px;margin-top:4px;">${escapeHtml(post.summary)}</div>` : ''}
+        </div>`,
+        )
+        .join('')}`,
+    )
+    .join('');
+
+  const text = input.sections
+    .map(
+      (section) =>
+        `## ${section.blogTitle}\n\n` +
+        section.posts
+          .map((post) =>
+            [
+              `- ${post.title}`,
+              `  ${post.url}`,
+              meta(post) && `  ${meta(post)}`,
+            ]
+              .filter(Boolean)
+              .join('\n'),
+          )
+          .join('\n\n'),
+    )
+    .join('\n\n');
+
+  return {
+    subject: `Your weekly digest: ${plural(postCount, 'new post')} from ${plural(input.sections.length, 'blog')}`,
+    html: layout(
+      `<p style="margin-top:0;">Here's what's new from the blogs you follow this week.</p>${html}`,
+      `<a href="${escapeHtml(input.settingsUrl)}" style="color:#656d76;">Manage your blogs and delivery time</a> · <a href="${escapeHtml(input.unsubscribeUrl)}" style="color:#656d76;">Unsubscribe</a>`,
+    ),
+    text: `Here's what's new from the blogs you follow this week.\n\n${text}\n\n---\nManage your blogs and delivery time: ${input.settingsUrl}\nUnsubscribe: ${input.unsubscribeUrl}`,
+  };
+}
+
 export function magicLinkEmail(link: string, ttlMinutes: number): RenderedEmail {
   const href = escapeHtml(link);
   return {
