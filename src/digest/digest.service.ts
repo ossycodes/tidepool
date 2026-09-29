@@ -117,7 +117,11 @@ export class DigestService {
     });
     if (claimed.count === 0) return 'skipped';
 
-    const sections = await this.collect(userId, previous ?? user.createdAt, now);
+    const sections = await this.collect(
+      userId,
+      previous ?? user.createdAt,
+      now,
+    );
     if (sections.length === 0) return 'empty';
 
     try {
@@ -145,7 +149,9 @@ export class DigestService {
   }
 
   /** Emails the current preview to the user without affecting their schedule. */
-  async sendTest(userId: string): Promise<{ sent: boolean; postCount: number }> {
+  async sendTest(
+    userId: string,
+  ): Promise<{ sent: boolean; postCount: number }> {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
     });

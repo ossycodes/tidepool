@@ -38,7 +38,10 @@ export class AuthService {
     const email = rawEmail.trim().toLowerCase();
 
     const recent = await this.prisma.loginToken.count({
-      where: { email, createdAt: { gt: new Date(Date.now() - LINK_WINDOW_MS) } },
+      where: {
+        email,
+        createdAt: { gt: new Date(Date.now() - LINK_WINDOW_MS) },
+      },
     });
     if (recent >= MAX_LINKS_PER_WINDOW) {
       this.logger.warn(`Magic-link limit reached for ${email}`);

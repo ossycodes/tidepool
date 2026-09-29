@@ -1,10 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  ACCEPT_FEED,
-  ACCEPT_HTML,
-  HttpClient,
-} from '../common/http-client.js';
+import { ACCEPT_FEED, ACCEPT_HTML, HttpClient } from '../common/http-client.js';
 import type { Env } from '../config/env.js';
 import { FetchMode, type Blog } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -16,8 +12,7 @@ import {
 } from './extract.js';
 
 export type RefreshResult =
-  | { ok: true; newPosts: number }
-  | { ok: false; error: string };
+  { ok: true; newPosts: number } | { ok: false; error: string };
 
 /** Failing blogs back off exponentially, capped at 2^6 intervals. */
 const MAX_BACKOFF_EXPONENT = 6;

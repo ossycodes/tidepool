@@ -197,11 +197,13 @@ export function extractArticleLinks(
       if (NON_ARTICLE_PATH.test(url.pathname) || ASSET_PATH.test(url.pathname))
         return;
 
-      const title = clean(anchor.text(), 300) ?? clean(anchor.attr('title'), 300);
+      const title =
+        clean(anchor.text(), 300) ?? clean(anchor.attr('title'), 300);
       if (!title || title.length < 4) return;
 
       const normalized = normalizeUrl(url.toString());
-      if (!found.has(normalized)) found.set(normalized, { url: normalized, title });
+      if (!found.has(normalized))
+        found.set(normalized, { url: normalized, title });
     });
     return [...found.values()];
   };
@@ -236,7 +238,10 @@ function looksLikeUrl(value: string | undefined): boolean {
   return !!value && /^https?:\/\//i.test(value);
 }
 
-function resolveUrl(href: string | undefined, base: string): string | undefined {
+function resolveUrl(
+  href: string | undefined,
+  base: string,
+): string | undefined {
   if (!href) return undefined;
   try {
     return normalizeUrl(new URL(href.trim(), base).toString());

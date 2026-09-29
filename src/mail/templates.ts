@@ -103,7 +103,10 @@ export function digestEmail(input: DigestEmailInput): RenderedEmail {
   };
 }
 
-export function magicLinkEmail(link: string, ttlMinutes: number): RenderedEmail {
+export function magicLinkEmail(
+  link: string,
+  ttlMinutes: number,
+): RenderedEmail {
   const href = escapeHtml(link);
   return {
     subject: 'Your Tidepool sign-in link',

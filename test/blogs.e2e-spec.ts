@@ -144,7 +144,10 @@ describe('Blogs (e2e)', () => {
       .set(auth)
       .send({ url: scrapeSite })
       .expect(201);
-    expect(res.body).toMatchObject({ fetchMode: 'SCRAPE', title: 'No Feed Here' });
+    expect(res.body).toMatchObject({
+      fetchMode: 'SCRAPE',
+      title: 'No Feed Here',
+    });
 
     const posts = await request(app.getHttpServer())
       .get(`/blogs/${res.body.id}/posts`)

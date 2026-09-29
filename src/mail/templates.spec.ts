@@ -41,7 +41,9 @@ describe('digestEmail', () => {
     const { text } = digestEmail(input);
     expect(text).toContain('## Blog <One>');
     expect(text).toContain('https://one.test/b');
-    expect(text).toContain('Unsubscribe: https://api.test/digests/unsubscribe?token=t');
+    expect(text).toContain(
+      'Unsubscribe: https://api.test/digests/unsubscribe?token=t',
+    );
   });
 });
 

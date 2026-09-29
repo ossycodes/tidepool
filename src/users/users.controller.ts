@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Patch,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Patch } from '@nestjs/common';
 import { CurrentUser, type AuthUser } from '../common/decorators.js';
 import { UpdateSettingsDto } from './dto.js';
 import { UsersService } from './users.service.js';

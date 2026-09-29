@@ -67,7 +67,9 @@ describe('detectFeed', () => {
   });
 
   it('rejects HTML and arbitrary JSON', () => {
-    expect(detectFeed('<!doctype html><html><body>hi</body></html>')).toBe(null);
+    expect(detectFeed('<!doctype html><html><body>hi</body></html>')).toBe(
+      null,
+    );
     expect(detectFeed('{"hello": "world"}')).toBe(null);
   });
 });
@@ -105,7 +107,11 @@ describe('parseFeed', () => {
   });
 
   it('parses JSON Feed, deriving a title from the content', async () => {
-    const feed = await parseFeed(JSON_FEED, 'json', 'https://json.example/feed.json');
+    const feed = await parseFeed(
+      JSON_FEED,
+      'json',
+      'https://json.example/feed.json',
+    );
     expect(feed.siteUrl).toBe('https://json.example/');
     expect(feed.posts[0]).toMatchObject({
       url: 'https://json.example/a',
@@ -163,7 +169,10 @@ describe('extractArticleLinks', () => {
     expect(posts).toEqual([
       { url: 'https://example.com/2025/09/new-thing', title: 'A new thing' },
       { url: 'https://example.com/2025/08/older', title: 'An older post' },
-      { url: 'https://www.example.com/2025/07/oldest', title: 'The oldest one' },
+      {
+        url: 'https://www.example.com/2025/07/oldest',
+        title: 'The oldest one',
+      },
     ]);
   });
 

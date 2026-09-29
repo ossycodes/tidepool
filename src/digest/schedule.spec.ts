@@ -5,7 +5,10 @@ const MONDAY_0730_UTC = new Date('2025-09-01T07:30:00Z');
 
 describe('localDayAndHour', () => {
   it('converts to the user timezone', () => {
-    expect(localDayAndHour(MONDAY_0730_UTC, 'UTC')).toEqual({ day: 1, hour: 7 });
+    expect(localDayAndHour(MONDAY_0730_UTC, 'UTC')).toEqual({
+      day: 1,
+      hour: 7,
+    });
     expect(localDayAndHour(MONDAY_0730_UTC, 'Africa/Lagos')).toEqual({
       day: 1,
       hour: 8,
@@ -42,15 +45,17 @@ describe('isDigestDue', () => {
   });
 
   it('is not due in other hours or days', () => {
-    expect(isDigestDue({ ...user, digestHour: 9 }, MONDAY_0730_UTC)).toBe(false);
+    expect(isDigestDue({ ...user, digestHour: 9 }, MONDAY_0730_UTC)).toBe(
+      false,
+    );
     expect(isDigestDue({ ...user, digestDay: 2 }, MONDAY_0730_UTC)).toBe(false);
   });
 
   it('is not due again within six days', () => {
     const sent = new Date(MONDAY_0730_UTC.getTime() - 60 * 60_000);
-    expect(isDigestDue({ ...user, lastDigestSentAt: sent }, MONDAY_0730_UTC)).toBe(
-      false,
-    );
+    expect(
+      isDigestDue({ ...user, lastDigestSentAt: sent }, MONDAY_0730_UTC),
+    ).toBe(false);
     const lastWeek = new Date(MONDAY_0730_UTC.getTime() - 7 * 24 * 60 * 60_000);
     expect(
       isDigestDue({ ...user, lastDigestSentAt: lastWeek }, MONDAY_0730_UTC),

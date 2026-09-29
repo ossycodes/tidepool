@@ -79,9 +79,9 @@ describe('Digests (e2e)', () => {
       .expect(200);
     expect(res.body.sections).toHaveLength(1);
     expect(res.body.sections[0].blog.title).toBe('Digest Blog');
-    expect(res.body.sections[0].posts.map((p: { url: string }) => p.url)).toEqual(
-      [`${site}posts/new-1`],
-    );
+    expect(
+      res.body.sections[0].posts.map((p: { url: string }) => p.url),
+    ).toEqual([`${site}posts/new-1`]);
   });
 
   it('sends a test digest without touching the schedule', async () => {

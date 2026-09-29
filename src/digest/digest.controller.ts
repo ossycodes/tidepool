@@ -72,11 +72,13 @@ export class DigestController {
       return;
     }
     // Explicit 200: with @Res() Nest would otherwise keep its POST default of 201.
-    res.status(200).send(
-      page(
-        "You're unsubscribed and won't get any more digests. You can turn them back on from your settings.",
-      ),
-    );
+    res
+      .status(200)
+      .send(
+        page(
+          "You're unsubscribed and won't get any more digests. You can turn them back on from your settings.",
+        ),
+      );
   }
 }
 

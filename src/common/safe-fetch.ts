@@ -102,10 +102,12 @@ function request(url: URL, accept: string): Promise<RawResponse> {
       () => req.destroy(new FetchError(`Timed out fetching ${url.href}`)),
       TIMEOUT_MS,
     );
-    const done = <T>(fn: (value: T) => void) => (value: T) => {
-      clearTimeout(timer);
-      fn(value);
-    };
+    const done =
+      <T>(fn: (value: T) => void) =>
+      (value: T) => {
+        clearTimeout(timer);
+        fn(value);
+      };
     const fail = done(reject);
 
     const req = client.request(
@@ -135,7 +137,8 @@ function request(url: URL, accept: string): Promise<RawResponse> {
         let stream: NodeJS.ReadableStream = res;
         const encoding = res.headers['content-encoding'];
         if (encoding === 'gzip') stream = res.pipe(zlib.createGunzip());
-        else if (encoding === 'deflate') stream = res.pipe(zlib.createInflate());
+        else if (encoding === 'deflate')
+          stream = res.pipe(zlib.createInflate());
         else if (encoding === 'br')
           stream = res.pipe(zlib.createBrotliDecompress());
 

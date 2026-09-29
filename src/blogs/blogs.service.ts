@@ -35,7 +35,9 @@ export class BlogsService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {
-        blog: { include: { posts: { orderBy: [...latestPostFirst], take: 1 } } },
+        blog: {
+          include: { posts: { orderBy: [...latestPostFirst], take: 1 } },
+        },
       },
     });
     return subscriptions.map((s) =>
@@ -47,7 +49,9 @@ export class BlogsService {
     const subscription = await this.prisma.subscription.findUnique({
       where: { userId_blogId: { userId, blogId } },
       include: {
-        blog: { include: { posts: { orderBy: [...latestPostFirst], take: 1 } } },
+        blog: {
+          include: { posts: { orderBy: [...latestPostFirst], take: 1 } },
+        },
       },
     });
     if (!subscription) throw new NotFoundException('Blog not found');

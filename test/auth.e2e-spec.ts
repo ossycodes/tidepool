@@ -40,7 +40,11 @@ describe('Auth & settings (e2e)', () => {
       .get('/me')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
-    expect(me.body).toMatchObject({ email, digestEnabled: true, timezone: 'UTC' });
+    expect(me.body).toMatchObject({
+      email,
+      digestEnabled: true,
+      timezone: 'UTC',
+    });
 
     await request(app.getHttpServer())
       .post('/auth/verify')

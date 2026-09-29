@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ACCEPT_FEED,
-  ACCEPT_HTML,
-  HttpClient,
-} from '../common/http-client.js';
+import { ACCEPT_FEED, ACCEPT_HTML, HttpClient } from '../common/http-client.js';
 import { normalizeUrl } from '../common/url.js';
 import type { FetchResult } from '../common/safe-fetch.js';
 import { FetchMode } from '../generated/prisma/client.js';
