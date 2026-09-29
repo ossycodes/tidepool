@@ -3,6 +3,18 @@
 API (NestJS, repo root) + web app (Vue, `web/`). Project docs are an Obsidian
 vault in `docs/` — start at `docs/Home.md`.
 
+## Resuming work
+
+When starting a session, resuming work, or after the context is compacted,
+read these before continuing so you work from the recorded state rather than
+a summary:
+
+- `docs/Home.md`: the map of the vault
+- `docs/Changelog.md`: what has shipped, newest first
+- `docs/Tracker.base` (Roadmap view) and the notes in `docs/Features/`: what's
+  planned, in progress, and known tech debt
+- `docs/Decisions.md`: why things are built the way they are
+
 ## Keep the docs current
 
 After a PR merges:

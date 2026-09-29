@@ -10,6 +10,7 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #15 | Obsidian vault in `docs/` ([[Home]], [[Tracker.base\|tracker]], [[Decisions]]) and `CLAUDE.md` |
 | #14 | [[Rename and pause blogs]] |
 | #13 | [[Open stats]] page and `GET /stats` |
 | #12 | README screenshots; fixed header and settings overflowing on phones |
