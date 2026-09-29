@@ -143,6 +143,73 @@ export const STARTER_PACKS: StarterPack[] = [
     ],
   },
   {
+    category: 'Tech',
+    name: 'Ruby & Rails',
+    blurb: 'Rails at scale and the craft of Ruby.',
+    blogs: [
+      { name: 'Rails at Scale', url: 'railsatscale.com' },
+      { name: 'Schneems', url: 'www.schneems.com' },
+      { name: 'Arkency', url: 'blog.arkency.com' },
+      { name: 'Janko Marohnić', url: 'janko.io' },
+      { name: 'zverok', url: 'zverok.space' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Ruby community',
+    blurb: 'News, tools and tips from people who keep Ruby moving.',
+    blogs: [
+      { name: 'RubyGems Blog', url: 'blog.rubygems.org' },
+      { name: 'Meta Redux', url: 'metaredux.com/archive' },
+      { name: 'Andy Croll', url: 'andycroll.com/ruby' },
+      { name: 'Greg Navis', url: 'www.gregnavis.com/articles' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Programming languages',
+    blurb: 'Go, Clojure, Haskell, C and the ideas behind them.',
+    blogs: [
+      { name: 'Anton Zhiyanov', url: 'antonz.org/all' },
+      { name: 'Philippe Gaultier', url: 'gaultier.github.io/blog' },
+      { name: 'Marcoshplace', url: 'marcosh.github.io' },
+      { name: 'Nikita Prokopov', url: 'tonsky.me' },
+      { name: 'Daniel Stenberg', url: 'daniel.haxx.se/blog' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Web dev in practice',
+    blurb: 'Node, React, PHP and Symfony, from people who build them.',
+    blogs: [
+      { name: 'Adventures in Nodeland', url: 'adventures.nodeland.dev/archive' },
+      { name: 'Vjeux', url: 'blog.vjeux.com' },
+      { name: 'Johann Pardanaud', url: 'johann.pardanaud.com/blog' },
+      { name: 'Ryan Chandler', url: 'ryangjchandler.co.uk' },
+      { name: 'Symfony: Living on the edge', url: 'symfony.com/blog/category/living-on-the-edge' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Company engineering blogs',
+    blurb: 'How teams at Etsy, Shopify and Sentry build and run software.',
+    blogs: [
+      { name: 'Etsy Code as Craft', url: 'www.etsy.com/codeascraft' },
+      { name: 'Shopify Engineering', url: 'shopify.engineering/topics/development' },
+      { name: 'Sentry Blog', url: 'blog.sentry.io' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Engineering leadership',
+    blurb: 'Running teams, systems and organisations well.',
+    blogs: [
+      { name: 'Irrational Exuberance', url: 'lethain.com' },
+      { name: 'Kitchen Soap', url: 'www.kitchensoap.com' },
+      { name: 'Chidi Williams', url: 'chidiwilliams.com' },
+    ],
+  },
+  {
     category: 'Work & money',
     name: 'Personal finance',
     blurb: 'Saving, investing and spending with intention.',
@@ -264,6 +331,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Wait But Why', url: 'waitbutwhy.com' },
       { name: '3 Quarks Daily', url: '3quarksdaily.com' },
       { name: 'The Marginalian', url: 'www.themarginalian.org' },
+      { name: 'Pessimists Archive', url: 'pessimistsarchive.substack.com' },
     ],
   },
   {
@@ -287,6 +355,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Rest of World', url: 'restofworld.org' },
       { name: 'The Conversation', url: 'theconversation.com' },
       { name: 'kottke.org', url: 'kottke.org' },
+      { name: 'The Roots of Progress', url: 'rootsofprogress.org/blog' },
     ],
   },
   {
@@ -332,6 +401,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Hyperallergic', url: 'hyperallergic.com' },
       { name: 'PetaPixel', url: 'petapixel.com' },
       { name: "It's Nice That", url: 'www.itsnicethat.com' },
+      { name: 'The Oatmeal', url: 'theoatmeal.com' },
     ],
   },
   {
@@ -343,6 +413,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Austin Kleon', url: 'austinkleon.com' },
       { name: "Writer's Digest", url: 'www.writersdigest.com' },
       { name: "Seth's Blog", url: 'seths.blog' },
+      { name: 'Blogging for Devs', url: 'bloggingfordevs.com/ruby-blogs' },
     ],
   },
   {
@@ -367,6 +438,16 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'No Film School', url: 'nofilmschool.com' },
       { name: 'Film Comment', url: 'www.filmcomment.com' },
       { name: 'Letterboxd Journal', url: 'letterboxd.com/journal' },
+    ],
+  },
+  {
+    category: 'Culture & arts',
+    name: 'Personal blogs',
+    blurb: 'Small sites by curious people, about whatever they love.',
+    blogs: [
+      { name: 'Learning Igbo', url: 'nwunyenwa.com' },
+      { name: 'Silly Software Club', url: 'www.sillysoftware.club/blog' },
+      { name: 'Nikita Lapkov', url: 'laplab.me' },
     ],
   },
   {
@@ -411,6 +492,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Legal Nomads', url: 'www.legalnomads.com' },
       { name: 'Adventurous Kate', url: 'www.adventurouskate.com' },
       { name: 'Atlas Obscura', url: 'www.atlasobscura.com' },
+      { name: 'The Winged Time Traveller', url: 'wingedtimetraveller.com' },
     ],
   },
   {
