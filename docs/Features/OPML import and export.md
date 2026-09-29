@@ -1,9 +1,10 @@
 ---
-status: planned
+status: shipped
 type: feature
 area: feeds
 priority: 1
-effort: S
+pr: 17
+shipped: 2026-09-29
 tags:
   - feature
 ---
