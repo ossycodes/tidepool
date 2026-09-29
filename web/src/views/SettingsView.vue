@@ -9,6 +9,7 @@ import { api, type SettingsPatch, type User } from '@/lib/api'
 import { timeUntil } from '@/lib/format'
 import { deviceTimeZone, hourLabel, issueTimeLabel, nextIssueAt } from '@/lib/schedule'
 import { session, setUser, signOut } from '@/lib/session'
+import { useTheme, type ThemePreference } from '@/lib/theme'
 import { toast } from '@/lib/toast'
 
 const router = useRouter()
@@ -24,6 +25,16 @@ const DAYS = [1, 2, 3, 4, 5, 6, 0].map((value) => ({
   label: SHORT_DAYS[value] ?? '',
   title: LONG_DAYS[value],
 }))
+const THEMES: { value: ThemePreference; label: string }[] = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+]
+const { preference, setThemePreference } = useTheme()
+const themePreference = computed({
+  get: () => preference.value,
+  set: setThemePreference,
+})
 const HOURS = Array.from({ length: 24 }, (_, hour) => ({ value: hour, label: hourLabel(hour) }))
 
 function offsetLabel(timeZone: string): string {
@@ -190,6 +201,22 @@ async function deleteAccount() {
               Digests are paused. Nothing will be sent until you turn them back on.
             </template>
           </p>
+        </div>
+      </section>
+
+      <section class="group" aria-labelledby="appearance-heading">
+        <div class="group__intro">
+          <h2 id="appearance-heading" class="group__title">Appearance</h2>
+          <p class="group__text">Saved on this device.</p>
+        </div>
+        <div class="group__body">
+          <div class="field">
+            <p class="field__label">Theme</p>
+            <UiSegmented v-model="themePreference" label="Theme" :options="THEMES" />
+            <p v-if="themePreference === 'system'" class="field__hint">
+              Follows your device’s light or dark setting.
+            </p>
+          </div>
         </div>
       </section>
 

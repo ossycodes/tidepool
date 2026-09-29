@@ -3,6 +3,7 @@ import { CalendarClock, Inbox, MailCheck, Plus, Rss } from '@lucide/vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
 import { useRoute } from 'vue-router'
 import IssueSpecimen from '@/components/IssueSpecimen.vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 import LogoMark from '@/components/ui/LogoMark.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { ApiError, api } from '@/lib/api'
@@ -99,6 +100,7 @@ async function useDifferentEmail() {
   <div class="home">
     <header class="container home__top">
       <span class="wordmark"><LogoMark :size="24" /> Tidepool</span>
+      <ThemeToggle />
     </header>
 
     <main class="container home__grid">
@@ -202,6 +204,9 @@ async function useDifferentEmail() {
 }
 
 .home__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding-top: 28px;
 }
 

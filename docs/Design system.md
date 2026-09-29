@@ -12,7 +12,8 @@ and in email.
 
 - **Type:** Newsreader (display, serif) and Inter (UI).
 - **Colour:** warm paper and ink, one sea-glass teal accent (`#0f766e`);
-  amber and rose only for status. Light and dark themes.
+  amber and rose only for status. Light and dark themes: dark tokens apply under
+  `:root[data-theme='dark']`, set before paint by `index.html` (see [[Theme toggle]]).
 - **Tokens:** `web/src/styles/tokens.css`. Emails copy them into `COLORS` in
   `src/mail/templates.ts` — keep the two in sync.
 - **Components:** `web/src/components/ui/` — button, spinner, toaster, switch,

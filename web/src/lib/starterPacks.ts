@@ -6,14 +6,14 @@ export const PACK_CATEGORIES = [
   'Culture & arts',
   'Home & life',
   'Hobbies & outdoors',
-] as const;
-export type PackCategory = (typeof PACK_CATEGORIES)[number];
+] as const
+export type PackCategory = (typeof PACK_CATEGORIES)[number]
 
 export interface StarterPack {
-  category: PackCategory;
-  name: string;
-  blurb: string;
-  blogs: { name: string; url: string }[];
+  category: PackCategory
+  name: string
+  blurb: string
+  blogs: { name: string; url: string }[]
 }
 
 // Generated from a candidate list; every address passed Tidepool's own feed
@@ -413,4 +413,4 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Wait But Why', url: 'waitbutwhy.com' },
     ],
   },
-];
+]
