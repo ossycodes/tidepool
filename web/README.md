@@ -33,6 +33,18 @@ Sign-in emails land in Mailpit at <http://localhost:8025>.
   logo).
 - `src/views/`: one component per route.
 
+## Quick add
+
+Put the app's address in front of any blog URL to follow it, like
+`tidepool.example/www.schneems.com` or `tidepool.example/https://jvns.ca/`.
+The router's catch-all ([`lib/quickAdd.ts`](src/lib/quickAdd.ts)) turns any
+path whose first segment is a domain into `/reading?follow=<url>`. Signed-out
+visitors sign in first, and the follow happens after the magic link.
+
+**Hosting:** the server must return `index.html` for every unknown path,
+including ones with dots such as `/www.schneems.com`. Some static hosts treat
+dotted paths as missing files. Vite's dev server already handles this.
+
 ## Design notes
 
 Tidepool is a calm, weekly ritual, so the UI is editorial rather than
