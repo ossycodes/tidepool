@@ -17,7 +17,8 @@ export interface StarterPack {
 }
 
 // Generated from a candidate list; every address passed Tidepool's own feed
-// discovery on 2026-09-29. Sites that block our fetcher (HTTP 403) were left out.
+// discovery on 2026-09-29, and rechecked after the fetcher fix (#25). Sites
+// that still block automated readers were left out.
 export const STARTER_PACKS: StarterPack[] = [
   {
     category: 'Tech',
@@ -113,6 +114,8 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Storytelling with Data', url: 'www.storytellingwithdata.com' },
       { name: 'The Pudding', url: 'pudding.cool' },
       { name: 'Datawrapper Blog', url: 'www.datawrapper.de/blog' },
+      { name: 'FlowingData', url: 'flowingdata.com' },
+      { name: 'Statistical Modeling', url: 'statmodeling.stat.columbia.edu' },
     ],
   },
   {
@@ -137,6 +140,73 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Joel on Software', url: 'www.joelonsoftware.com' },
       { name: 'The Pragmatic Engineer', url: 'blog.pragmaticengineer.com' },
       { name: "Lenny's Newsletter", url: 'www.lennysnewsletter.com' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Ruby & Rails',
+    blurb: 'Rails at scale and the craft of Ruby.',
+    blogs: [
+      { name: 'Rails at Scale', url: 'railsatscale.com' },
+      { name: 'Schneems', url: 'www.schneems.com' },
+      { name: 'Arkency', url: 'blog.arkency.com' },
+      { name: 'Janko Marohnić', url: 'janko.io' },
+      { name: 'zverok', url: 'zverok.space' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Ruby community',
+    blurb: 'News, tools and tips from people who keep Ruby moving.',
+    blogs: [
+      { name: 'RubyGems Blog', url: 'blog.rubygems.org' },
+      { name: 'Meta Redux', url: 'metaredux.com/archive' },
+      { name: 'Andy Croll', url: 'andycroll.com/ruby' },
+      { name: 'Greg Navis', url: 'www.gregnavis.com/articles' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Programming languages',
+    blurb: 'Go, Clojure, Haskell, C and the ideas behind them.',
+    blogs: [
+      { name: 'Anton Zhiyanov', url: 'antonz.org/all' },
+      { name: 'Philippe Gaultier', url: 'gaultier.github.io/blog' },
+      { name: 'Marcoshplace', url: 'marcosh.github.io' },
+      { name: 'Nikita Prokopov', url: 'tonsky.me' },
+      { name: 'Daniel Stenberg', url: 'daniel.haxx.se/blog' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Web dev in practice',
+    blurb: 'Node, React, PHP and Symfony, from people who build them.',
+    blogs: [
+      { name: 'Adventures in Nodeland', url: 'adventures.nodeland.dev/archive' },
+      { name: 'Vjeux', url: 'blog.vjeux.com' },
+      { name: 'Johann Pardanaud', url: 'johann.pardanaud.com/blog' },
+      { name: 'Ryan Chandler', url: 'ryangjchandler.co.uk' },
+      { name: 'Symfony: Living on the edge', url: 'symfony.com/blog/category/living-on-the-edge' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Company engineering blogs',
+    blurb: 'How teams at Etsy, Shopify and Sentry build and run software.',
+    blogs: [
+      { name: 'Etsy Code as Craft', url: 'www.etsy.com/codeascraft' },
+      { name: 'Shopify Engineering', url: 'shopify.engineering/topics/development' },
+      { name: 'Sentry Blog', url: 'blog.sentry.io' },
+    ],
+  },
+  {
+    category: 'Tech',
+    name: 'Engineering leadership',
+    blurb: 'Running teams, systems and organisations well.',
+    blogs: [
+      { name: 'Irrational Exuberance', url: 'lethain.com' },
+      { name: 'Kitchen Soap', url: 'www.kitchensoap.com' },
+      { name: 'Chidi Williams', url: 'chidiwilliams.com' },
     ],
   },
   {
@@ -215,6 +285,19 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Smitten Kitchen', url: 'smittenkitchen.com' },
       { name: 'Budget Bytes', url: 'www.budgetbytes.com' },
       { name: 'David Lebovitz', url: 'www.davidlebovitz.com' },
+      { name: 'Serious Eats', url: 'www.seriouseats.com' },
+    ],
+  },
+  {
+    category: 'Health & wellbeing',
+    name: 'Running & endurance',
+    blurb: 'Training, races and the science of going far.',
+    blogs: [
+      { name: 'iRunFar', url: 'www.irunfar.com' },
+      { name: 'Marathon Handbook', url: 'marathonhandbook.com' },
+      { name: 'Believe in the Run', url: 'believeintherun.com' },
+      { name: 'Trail Runner', url: 'www.trailrunnermag.com' },
+      { name: "Runner's World", url: 'www.runnersworld.com' },
     ],
   },
   {
@@ -248,6 +331,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Wait But Why', url: 'waitbutwhy.com' },
       { name: '3 Quarks Daily', url: '3quarksdaily.com' },
       { name: 'The Marginalian', url: 'www.themarginalian.org' },
+      { name: 'Pessimists Archive', url: 'pessimistsarchive.substack.com' },
     ],
   },
   {
@@ -259,6 +343,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Grist', url: 'grist.org' },
       { name: 'Yale Environment 360', url: 'e360.yale.edu' },
       { name: 'Volts', url: 'www.volts.wtf' },
+      { name: 'Inside Climate News', url: 'insideclimatenews.org' },
     ],
   },
   {
@@ -270,6 +355,19 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Rest of World', url: 'restofworld.org' },
       { name: 'The Conversation', url: 'theconversation.com' },
       { name: 'kottke.org', url: 'kottke.org' },
+      { name: 'The Roots of Progress', url: 'rootsofprogress.org/blog' },
+    ],
+  },
+  {
+    category: 'Science & ideas',
+    name: 'History',
+    blurb: 'The past, told with care and good stories.',
+    blogs: [
+      { name: 'A Collection of Unmitigated Pedantry', url: 'acoup.blog' },
+      { name: 'The Public Domain Review', url: 'publicdomainreview.org' },
+      { name: 'History Today', url: 'www.historytoday.com' },
+      { name: 'JSTOR Daily', url: 'daily.jstor.org' },
+      { name: 'HistoryExtra', url: 'www.historyextra.com' },
     ],
   },
   {
@@ -303,6 +401,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Hyperallergic', url: 'hyperallergic.com' },
       { name: 'PetaPixel', url: 'petapixel.com' },
       { name: "It's Nice That", url: 'www.itsnicethat.com' },
+      { name: 'The Oatmeal', url: 'theoatmeal.com' },
     ],
   },
   {
@@ -314,6 +413,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Austin Kleon', url: 'austinkleon.com' },
       { name: "Writer's Digest", url: 'www.writersdigest.com' },
       { name: "Seth's Blog", url: 'seths.blog' },
+      { name: 'Blogging for Devs', url: 'bloggingfordevs.com/ruby-blogs' },
     ],
   },
   {
@@ -326,6 +426,28 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Waxy', url: 'waxy.org' },
       { name: 'Simon Willison', url: 'simonwillison.net' },
       { name: 'xkcd', url: 'xkcd.com' },
+    ],
+  },
+  {
+    category: 'Culture & arts',
+    name: 'Film & TV',
+    blurb: 'Criticism and craft from people who love the screen.',
+    blogs: [
+      { name: 'RogerEbert.com', url: 'www.rogerebert.com' },
+      { name: 'IndieWire', url: 'www.indiewire.com' },
+      { name: 'No Film School', url: 'nofilmschool.com' },
+      { name: 'Film Comment', url: 'www.filmcomment.com' },
+      { name: 'Letterboxd Journal', url: 'letterboxd.com/journal' },
+    ],
+  },
+  {
+    category: 'Culture & arts',
+    name: 'Personal blogs',
+    blurb: 'Small sites by curious people, about whatever they love.',
+    blogs: [
+      { name: 'Learning Igbo', url: 'nwunyenwa.com' },
+      { name: 'Silly Software Club', url: 'www.sillysoftware.club/blog' },
+      { name: 'Nikita Lapkov', url: 'laplab.me' },
     ],
   },
   {
@@ -369,6 +491,8 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'The Points Guy', url: 'thepointsguy.com' },
       { name: 'Legal Nomads', url: 'www.legalnomads.com' },
       { name: 'Adventurous Kate', url: 'www.adventurouskate.com' },
+      { name: 'Atlas Obscura', url: 'www.atlasobscura.com' },
+      { name: 'The Winged Time Traveller', url: 'wingedtimetraveller.com' },
     ],
   },
   {
@@ -379,6 +503,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Put This On', url: 'putthison.com' },
       { name: 'Die, Workwear!', url: 'dieworkwear.com' },
       { name: 'Into Mind', url: 'intomind.com' },
+      { name: 'Permanent Style', url: 'www.permanentstyle.com' },
     ],
   },
   {
@@ -411,6 +536,17 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'The Marginalian', url: 'www.themarginalian.org' },
       { name: "Seth's Blog", url: 'seths.blog' },
       { name: 'Wait But Why', url: 'waitbutwhy.com' },
+    ],
+  },
+  {
+    category: 'Hobbies & outdoors',
+    name: 'Cars & motoring',
+    blurb: 'Car culture, reviews and the future of driving.',
+    blogs: [
+      { name: 'Jalopnik', url: 'jalopnik.com' },
+      { name: 'The Drive', url: 'www.thedrive.com' },
+      { name: 'Electrek', url: 'electrek.co' },
+      { name: 'Car and Driver', url: 'www.caranddriver.com' },
     ],
   },
 ]
