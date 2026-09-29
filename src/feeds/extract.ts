@@ -36,7 +36,46 @@ const NON_ARTICLE_PATH =
 const ASSET_PATH =
   /\.(png|jpe?g|gif|svg|webp|avif|ico|pdf|zip|xml|json|css|js|mp3|mp4|webm)$/i;
 
-const rssParser = new Parser();
+// An "&" that doesn't start a character or entity reference, e.g.
+// title="Cinnamon Buns & Commit Bits". Invalid XML, but common in real feeds.
+const BARE_AMPERSAND = /&(?!(?:[a-zA-Z][a-zA-Z0-9]*|#\d+|#x[0-9a-fA-F]+);)/g;
+const CDATA = /(<!\[CDATA\[[\s\S]*?\]\]>)/;
+
+/** Escapes bare ampersands outside CDATA so the strict XML parser accepts the feed. */
+export function repairXml(xml: string): string {
+  return xml
+    .split(CDATA)
+    .map((part, i) =>
+      i % 2 === 1 ? part : part.replace(BARE_AMPERSAND, '&amp;'),
+    )
+    .join('');
+}
+
+// sax's loose mode upper-cases names, so normalise them back for rss-parser.
+const LENIENT_XML = {
+  strict: false,
+  normalizeTags: true,
+  attrNameProcessors: [(name: string) => name.toLowerCase()],
+};
+
+/**
+ * Strict parse first; if the feed is malformed in ways repairXml can't fix
+ * (e.g. title="How to "Sustain Heroku""), retry in loose mode like browsers
+ * and feed readers do. A fresh parser each time: a shared one keeps state from
+ * a failed parse and makes the next result depend on what came before.
+ */
+async function parseXmlFeed(body: string) {
+  const xml = repairXml(body);
+  try {
+    return await new Parser().parseString(xml);
+  } catch (strictError) {
+    try {
+      return await new Parser({ xml2js: LENIENT_XML }).parseString(xml);
+    } catch {
+      throw strictError;
+    }
+  }
+}
 
 export function detectFeed(body: string): FeedKind | null {
   const head = body.trimStart().slice(0, 2000);
@@ -56,7 +95,7 @@ export async function parseFeed(
 ): Promise<ParsedFeed> {
   if (kind === 'json') return parseJsonFeed(body, feedUrl);
 
-  const feed = await rssParser.parseString(body);
+  const feed = await parseXmlFeed(body);
   const siteUrl = resolveUrl(feed.link, feedUrl);
   const posts = feed.items.map((item) => {
     const url = resolveUrl(
