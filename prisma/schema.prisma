@@ -1,0 +1,124 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  digestEnabled    Boolean   @default(true)
+  /// 0 = Sunday ... 6 = Saturday, in the user's timezone
+  digestDay        Int       @default(1)
+  /// 0-23, in the user's timezone
+  digestHour       Int       @default(8)
+  /// IANA timezone name, e.g. "Europe/London"
+  timezone         String    @default("UTC")
+  lastDigestSentAt DateTime? @db.Timestamptz
+  createdAt        DateTime  @default(now()) @db.Timestamptz
+  updatedAt        DateTime  @updatedAt @db.Timestamptz
+
+  subscriptions Subscription[]
+  digests       Digest[]
+}
+
+/// Magic-link tokens are keyed by email so the User row is only created once
+/// someone actually clicks the link.
+model LoginToken {
+  id        String    @id @default(cuid())
+  email     String
+  /// sha256 of the raw token; the raw token only ever lives in the email
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+
+  @@index([email, createdAt])
+  @@index([expiresAt])
+}
+
+enum FetchMode {
+  /// RSS / Atom / JSON Feed
+  FEED
+  /// No feed found; new posts are detected by diffing links on the page
+  SCRAPE
+}
+
+model Blog {
+  id                  String    @id @default(cuid())
+  /// Dedup key: the feed URL in FEED mode, the page URL in SCRAPE mode
+  sourceUrl           String    @unique
+  fetchMode           FetchMode
+  siteUrl             String
+  title               String
+  description         String?
+  lastFetchedAt       DateTime? @db.Timestamptz
+  nextFetchAt         DateTime  @default(now()) @db.Timestamptz
+  consecutiveFailures Int       @default(0)
+  lastError           String?
+  createdAt           DateTime  @default(now()) @db.Timestamptz
+
+  posts         Post[]
+  subscriptions Subscription[]
+
+  @@index([nextFetchAt])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  blogId    String
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blogId])
+  @@index([blogId])
+}
+
+model Post {
+  id           String    @id @default(cuid())
+  blogId       String
+  url          String
+  title        String
+  summary      String?
+  author       String?
+  publishedAt  DateTime? @db.Timestamptz
+  discoveredAt DateTime  @default(now()) @db.Timestamptz
+  /// Posts that already existed when the blog was first fetched; never sent in digests
+  backfill     Boolean   @default(false)
+
+  blog        Blog         @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  digestItems DigestItem[]
+
+  @@unique([blogId, url])
+  @@index([blogId, discoveredAt])
+}
+
+model Digest {
+  id        String   @id @default(cuid())
+  userId    String
+  sentAt    DateTime @default(now()) @db.Timestamptz
+  postCount Int
+
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items DigestItem[]
+
+  @@index([userId, sentAt])
+}
+
+model DigestItem {
+  digestId String
+  postId   String
+
+  digest Digest @relation(fields: [digestId], references: [id], onDelete: Cascade)
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([digestId, postId])
+}
