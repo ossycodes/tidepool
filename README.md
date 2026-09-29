@@ -8,6 +8,60 @@ ones without an RSS feed.
 - **Web app** ([`web/`](web/README.md)): Vue 3 + Vite. Run it with
   `cd web && npm install && npm run dev`, then open <http://localhost:5173>.
 
+## Screenshots
+
+### Landing page and sign-in
+
+Sign in with an emailed magic link; no password.
+
+![Landing page with the sign-in form and an example issue](docs/screenshots/landing.png)
+
+![Check your inbox state after requesting a sign-in link](docs/screenshots/check-inbox.png)
+
+### Reading list
+
+Follow any blog by URL, with or without RSS. Blogs without a feed are watched
+by checking the page itself ("Watching page"). Expand a blog to see its recent
+posts; the masthead shows when the next issue arrives.
+
+![Reading list with followed blogs and one blog expanded](docs/screenshots/reading-list.png)
+
+![Reading list in dark mode](docs/screenshots/reading-list-dark.png)
+
+### Next issue
+
+A preview of the next digest, laid out like the email, with past issues below.
+
+![Next issue preview](docs/screenshots/next-issue.png)
+
+### Settings
+
+Delivery day, time and timezone (saved as you change them), pause, sign out and
+delete account.
+
+![Settings page](docs/screenshots/settings.png)
+
+### On a phone
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/mobile-reading-list.png" alt="Reading list on a phone" width="300"></td>
+    <td><img src="docs/screenshots/mobile-settings.png" alt="Settings on a phone" width="300"></td>
+  </tr>
+</table>
+
+### Emails
+
+The weekly digest and the sign-in email share the web app's design: a numbered
+issue with a masthead, grouped by blog.
+
+<table>
+  <tr>
+    <td valign="top"><img src="docs/screenshots/email-digest.png" alt="Weekly digest email" width="420"></td>
+    <td valign="top"><img src="docs/screenshots/email-sign-in.png" alt="Sign-in email" width="420"></td>
+  </tr>
+</table>
+
 ## Local setup
 
 ```bash
