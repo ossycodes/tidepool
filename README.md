@@ -1,124 +1,104 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Tidepool
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+One email a week with all the new posts from the blogs you follow — even the
+ones without an RSS feed.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This repo is the backend: a NestJS 12 API with Postgres (Prisma 7), Redis
+(BullMQ) and SMTP (Nodemailer).
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Local setup
 
 ```bash
-$ npm install
+cp .env.example .env          # then set JWT_SECRET to a long random string
+docker compose up -d          # Postgres :5433, Redis :6380, Mailpit :1025/:8025
+npm install                   # also runs `prisma generate`
+npm run db:migrate            # apply migrations
+npm run start:dev
 ```
 
-## Compile and run the project
+Outgoing email is caught by Mailpit: <http://localhost:8025>
 
-```bash
-# development
-$ npm run start
+## Scripts
 
-# watch mode
-$ npm run start:dev
+| Script               | What it does                             |
+| -------------------- | ---------------------------------------- |
+| `npm run start:dev`  | API with watch mode                      |
+| `npm test`           | Unit tests (Vitest)                      |
+| `npm run test:e2e`   | E2E tests — needs `docker compose up -d` |
+| `npm run lint`       | oxlint                                   |
+| `npm run db:migrate` | Create/apply migrations in development   |
+| `npm run db:deploy`  | Apply migrations in production           |
 
-# production mode
-$ npm run start:prod
-```
+## Security notes
 
-## Run tests
+Tidepool fetches arbitrary user-supplied URLs, so all outbound HTTP goes through
+[`safeFetch`](src/common/safe-fetch.ts): http(s) only, private/loopback/link-local
+addresses are refused at connect time (so DNS rebinding is covered too), plus
+timeouts, a redirect cap and a 20 MB response limit.
 
-```bash
-# unit tests
-$ npm run test
+## API
 
-# e2e tests
-$ npm run test:e2e
+All routes need `Authorization: Bearer <accessToken>` unless marked public.
 
-# test coverage
-$ npm run test:cov
-```
+| Method | Path                          | Auth   | Description                                                                 |
+| ------ | ----------------------------- | ------ | --------------------------------------------------------------------------- |
+| GET    | `/health`                     | public | Liveness + DB check                                                         |
+| POST   | `/auth/magic-link`            | public | `{ email }` → emails a sign-in link to `FRONTEND_URL/auth/callback?token=…` |
+| POST   | `/auth/verify`                | public | `{ token, timezone? }` → `{ accessToken, user }`                            |
+| GET    | `/me`                         | ✓      | Current user and digest settings                                            |
+| PATCH  | `/me`                         | ✓      | `{ digestEnabled?, digestDay? (0=Sun), digestHour?, timezone? }`            |
+| DELETE | `/me`                         | ✓      | Delete account and all subscriptions                                        |
+| GET    | `/blogs`                      | ✓      | Blogs you follow, with health and latest post                               |
+| POST   | `/blogs`                      | ✓      | `{ url }` → follow a blog (homepage or feed URL, scheme optional)           |
+| GET    | `/blogs/:id`                  | ✓      | One followed blog                                                           |
+| GET    | `/blogs/:id/posts`            | ✓      | Recent posts, `?limit=` 1–100 (default 20)                                  |
+| DELETE | `/blogs/:id`                  | ✓      | Unfollow                                                                    |
+| GET    | `/digests`                    | ✓      | Last 20 digests sent to you                                                 |
+| GET    | `/digests/preview`            | ✓      | What your next digest would contain right now                               |
+| POST   | `/digests/test`               | ✓      | Email yourself the preview (3/hour, doesn't affect your schedule)           |
+| GET    | `/digests/unsubscribe?token=` | public | Confirm page linked from every digest                                       |
+| POST   | `/digests/unsubscribe?token=` | public | Unsubscribe (confirm button and RFC 8058 one-click)                         |
 
-## Deployment
+### Sign-in flow
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+1. Frontend posts the email to `/auth/magic-link` (always `202`, so it can't be
+   used to check which emails have accounts).
+2. The user clicks the link, the frontend reads `?token=` and posts it to
+   `/auth/verify` along with the browser's timezone.
+3. The account is created on first verify. Links are single-use and expire after
+   `MAGIC_LINK_TTL_MINUTES`.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### How blogs are followed
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+When a URL is added, [`DiscoveryService`](src/feeds/discovery.service.ts) looks
+for a feed in this order:
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+1. The URL is itself an RSS, Atom or JSON Feed.
+2. Feeds advertised with `<link rel="alternate">` on the page.
+3. Common locations (`/feed`, `/rss.xml`, `/feed.xml`, `/atom.xml`, `/index.xml`,
+   `/rss`) under the page path and the site root.
+4. No feed: **scrape mode**. The page is re-fetched on every check, and links
+   that look like posts (headings, `<article>`) and weren't there before
+   count as new posts.
 
-## Observability
+Blogs are shared between users and fetched once per `FETCH_INTERVAL_MINUTES`
+through the BullMQ `feed-fetch` queue. Failures back off exponentially. Posts
+that already existed when a blog was first fetched are stored as `backfill` and
+never emailed.
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+### How digests are sent
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+Every 15 minutes [`DigestScheduler`](src/digest/digest.scheduler.ts) queues a
+job for each user whose chosen day and hour (in their timezone) is now. Users
+who got a digest in the last 6 days are skipped. The job:
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+1. Claims the week by setting `lastDigestSentAt` with a compare-and-set, so
+   concurrent workers or instances can't double-send.
+2. Collects posts discovered since the previous digest, only from blogs
+   followed before the post appeared, skipping backfill and anything published
+   more than 30 days ago.
+3. Sends nothing if there's nothing new; otherwise emails it. If sending fails,
+   the claim is released and BullMQ retries.
 
-To add it to this project:
-
-```bash
-$ npm install @nestjs/observe
-```
-
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
-
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Unsubscribe links carry a signed token that can't be used to sign in. The GET
+link only shows a confirm button, because mail scanners prefetch links.
