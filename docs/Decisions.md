@@ -51,6 +51,9 @@ or more followers, so the page never reveals what a single reader follows.
 rather than the server running a background import job. Discovery can take
 seconds per blog; small batches keep each request short, give real progress,
 and let the reader stop part-way without any job state on the server.
+Small imports (a starter pack, a shared list) go one blog per request, up to
+5 in parallel, so progress visibly ticks; big ones use full batches of 10, one
+at a time, to stay inside the 30/min limit (`web/src/lib/importPlan.ts`).
 
 ## Starter pack blogs are verified, not guessed
 Every starter pack address was run through our own feed discovery before it
