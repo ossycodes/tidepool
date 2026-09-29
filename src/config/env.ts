@@ -10,7 +10,7 @@ export const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().min(1),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
-  JWT_EXPIRES_IN: z.string().default('30d'),
+  JWT_TTL_DAYS: z.coerce.number().int().positive().default(30),
   MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().int().default(587),

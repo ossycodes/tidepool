@@ -38,6 +38,22 @@ timeouts, a redirect cap and a 5 MB response limit.
 
 ## API
 
-| Method | Path      | Auth | Description           |
-| ------ | --------- | ---- | --------------------- |
-| GET    | `/health` | —    | Liveness + DB check   |
+All routes need `Authorization: Bearer <accessToken>` unless marked public.
+
+| Method | Path               | Auth   | Description                                                   |
+| ------ | ------------------ | ------ | ------------------------------------------------------------- |
+| GET    | `/health`          | public | Liveness + DB check                                           |
+| POST   | `/auth/magic-link` | public | `{ email }` → emails a sign-in link to `FRONTEND_URL/auth/callback?token=…` |
+| POST   | `/auth/verify`     | public | `{ token, timezone? }` → `{ accessToken, user }`              |
+| GET    | `/me`              | ✓      | Current user and digest settings                              |
+| PATCH  | `/me`              | ✓      | `{ digestEnabled?, digestDay? (0=Sun), digestHour?, timezone? }` |
+| DELETE | `/me`              | ✓      | Delete account and all subscriptions                          |
+
+### Sign-in flow
+
+1. Frontend posts the email to `/auth/magic-link` (always `202`, so it can't be
+   used to check which emails have accounts).
+2. The user clicks the link, the frontend reads `?token=` and posts it to
+   `/auth/verify` along with the browser's timezone.
+3. The account is created on first verify. Links are single-use and expire after
+   `MAGIC_LINK_TTL_MINUTES`.
