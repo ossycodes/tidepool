@@ -96,24 +96,25 @@ timeouts, a redirect cap and a 20 MB response limit.
 
 All routes need `Authorization: Bearer <accessToken>` unless marked public.
 
-| Method | Path                          | Auth   | Description                                                                 |
-| ------ | ----------------------------- | ------ | --------------------------------------------------------------------------- |
-| GET    | `/health`                     | public | Liveness + DB check                                                         |
-| POST   | `/auth/magic-link`            | public | `{ email }` → emails a sign-in link to `FRONTEND_URL/auth/callback?token=…` |
-| POST   | `/auth/verify`                | public | `{ token, timezone? }` → `{ accessToken, user }`                            |
-| GET    | `/me`                         | ✓      | Current user and digest settings                                            |
-| PATCH  | `/me`                         | ✓      | `{ digestEnabled?, digestDay? (0=Sun), digestHour?, timezone? }`            |
-| DELETE | `/me`                         | ✓      | Delete account and all subscriptions                                        |
-| GET    | `/blogs`                      | ✓      | Blogs you follow, with health and latest post                               |
-| POST   | `/blogs`                      | ✓      | `{ url }` → follow a blog (homepage or feed URL, scheme optional)           |
-| GET    | `/blogs/:id`                  | ✓      | One followed blog                                                           |
-| GET    | `/blogs/:id/posts`            | ✓      | Recent posts, `?limit=` 1–100 (default 20)                                  |
-| DELETE | `/blogs/:id`                  | ✓      | Unfollow                                                                    |
-| GET    | `/digests`                    | ✓      | Last 20 digests sent to you                                                 |
-| GET    | `/digests/preview`            | ✓      | What your next digest would contain right now                               |
-| POST   | `/digests/test`               | ✓      | Email yourself the preview (3/hour, doesn't affect your schedule)           |
-| GET    | `/digests/unsubscribe?token=` | public | Confirm page linked from every digest                                       |
-| POST   | `/digests/unsubscribe?token=` | public | Unsubscribe (confirm button and RFC 8058 one-click)                         |
+| Method | Path                          | Auth   | Description                                                                                      |
+| ------ | ----------------------------- | ------ | ------------------------------------------------------------------------------------------------ |
+| GET    | `/health`                     | public | Liveness + DB check                                                                              |
+| POST   | `/auth/magic-link`            | public | `{ email }` → emails a sign-in link to `FRONTEND_URL/auth/callback?token=…`                      |
+| POST   | `/auth/verify`                | public | `{ token, timezone? }` → `{ accessToken, user }`                                                 |
+| GET    | `/me`                         | ✓      | Current user and digest settings                                                                 |
+| PATCH  | `/me`                         | ✓      | `{ digestEnabled?, digestDay? (0=Sun), digestHour?, timezone? }`                                 |
+| DELETE | `/me`                         | ✓      | Delete account and all subscriptions                                                             |
+| GET    | `/blogs`                      | ✓      | Blogs you follow, with health and latest post                                                    |
+| POST   | `/blogs`                      | ✓      | `{ url }` → follow a blog (homepage or feed URL, scheme optional)                                |
+| GET    | `/blogs/:id`                  | ✓      | One followed blog                                                                                |
+| GET    | `/blogs/:id/posts`            | ✓      | Recent posts, `?limit=` 1–100 (default 20)                                                       |
+| PATCH  | `/blogs/:id`                  | ✓      | `{ title?, paused? }`: your own name for the blog (`null` restores it) and pausing it in digests |
+| DELETE | `/blogs/:id`                  | ✓      | Unfollow                                                                                         |
+| GET    | `/digests`                    | ✓      | Last 20 digests sent to you                                                                      |
+| GET    | `/digests/preview`            | ✓      | What your next digest would contain right now                                                    |
+| POST   | `/digests/test`               | ✓      | Email yourself the preview (3/hour, doesn't affect your schedule)                                |
+| GET    | `/digests/unsubscribe?token=` | public | Confirm page linked from every digest                                                            |
+| POST   | `/digests/unsubscribe?token=` | public | Unsubscribe (confirm button and RFC 8058 one-click)                                              |
 
 ### Sign-in flow
 

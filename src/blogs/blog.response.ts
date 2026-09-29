@@ -23,17 +23,25 @@ export function toPostResponse(post: Post) {
 
 export function toBlogResponse(
   blog: Blog,
-  subscribedAt: Date,
+  subscription: {
+    createdAt: Date;
+    customTitle: string | null;
+    paused: boolean;
+  },
   latestPost?: Post,
 ) {
   return {
     id: blog.id,
-    title: blog.title,
+    /** What this reader sees: their own name for the blog, if they set one */
+    title: subscription.customTitle ?? blog.title,
+    originalTitle: blog.title,
+    customTitle: subscription.customTitle,
+    paused: subscription.paused,
     description: blog.description,
     siteUrl: blog.siteUrl,
     sourceUrl: blog.sourceUrl,
     fetchMode: blog.fetchMode,
-    subscribedAt,
+    subscribedAt: subscription.createdAt,
     lastFetchedAt: blog.lastFetchedAt,
     healthy: blog.consecutiveFailures < UNHEALTHY_AFTER_FAILURES,
     lastError: blog.consecutiveFailures ? blog.lastError : null,

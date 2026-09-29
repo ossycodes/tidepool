@@ -5,13 +5,14 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser, type AuthUser } from '../common/decorators.js';
 import { BlogsService } from './blogs.service.js';
-import { AddBlogDto, ListPostsQuery } from './dto.js';
+import { AddBlogDto, ListPostsQuery, UpdateBlogDto } from './dto.js';
 
 @Controller('blogs')
 export class BlogsController {
@@ -32,6 +33,15 @@ export class BlogsController {
   @Get(':id')
   get(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.blogs.get(user.id, id);
+  }
+
+  @Patch(':id')
+  update(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateBlogDto,
+  ) {
+    return this.blogs.update(user.id, id, dto);
   }
 
   @Get(':id/posts')

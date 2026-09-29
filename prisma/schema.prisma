@@ -70,10 +70,14 @@ model Blog {
 }
 
 model Subscription {
-  id        String   @id @default(cuid())
-  userId    String
-  blogId    String
-  createdAt DateTime @default(now()) @db.Timestamptz
+  id          String   @id @default(cuid())
+  userId      String
+  blogId      String
+  /// This reader's own name for the blog; other readers still see Blog.title
+  customTitle String?
+  /// Still followed and fetched, but left out of this reader's digests
+  paused      Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   blog Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)

@@ -46,8 +46,9 @@ export class DigestService {
     since: Date,
     until: Date,
   ): Promise<DigestSection[]> {
+    // Paused blogs stay followed but are left out of the digest.
     const subscriptions = await this.prisma.subscription.findMany({
-      where: { userId },
+      where: { userId, paused: false },
       include: { blog: { select: { id: true, title: true, siteUrl: true } } },
     });
     if (subscriptions.length === 0) return [];
@@ -73,7 +74,13 @@ export class DigestService {
       if (post.discoveredAt <= subscription.createdAt) continue;
       let section = sections.get(post.blogId);
       if (!section) {
-        section = { blog: subscription.blog, posts: [] };
+        section = {
+          blog: {
+            ...subscription.blog,
+            title: subscription.customTitle ?? subscription.blog.title,
+          },
+          posts: [],
+        };
         sections.set(post.blogId, section);
       }
       section.posts.push(toPostResponse(post));

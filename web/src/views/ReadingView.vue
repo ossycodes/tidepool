@@ -42,6 +42,8 @@ const today = new Date().toLocaleDateString('en-US', {
 // Freshest first; blogs with nothing found yet sink to the bottom.
 const sortedBlogs = computed(() =>
   [...blogs.value].sort((a, b) => {
+    // Paused blogs sit below the ones that make it into the digest.
+    if (a.paused !== b.paused) return a.paused ? 1 : -1
     const at = a.latestPost ? Date.parse(postDate(a.latestPost)) : 0
     const bt = b.latestPost ? Date.parse(postDate(b.latestPost)) : 0
     return bt - at
@@ -149,6 +151,48 @@ async function unfollow(blog: Blog) {
   }
 }
 
+function replaceBlog(updated: Blog) {
+  blogs.value = blogs.value.map((b) => (b.id === updated.id ? updated : b))
+}
+
+/** Optimistic per-reader change; reverts if the API refuses. */
+async function updateBlog(blog: Blog, patch: { title?: string | null; paused?: boolean }) {
+  const optimistic: Blog = { ...blog }
+  if (patch.title !== undefined) {
+    optimistic.customTitle = patch.title
+    optimistic.title = patch.title ?? blog.originalTitle
+  }
+  if (patch.paused !== undefined) optimistic.paused = patch.paused
+  replaceBlog(optimistic)
+  try {
+    const saved = await api.updateBlog(blog.id, patch)
+    replaceBlog(saved)
+    return saved
+  } catch (err) {
+    replaceBlog(blog)
+    toast(err instanceof Error ? err.message : 'Couldn’t save that change.', { tone: 'error' })
+    return null
+  }
+}
+
+async function rename(blog: Blog, title: string | null) {
+  const saved = await updateBlog(blog, { title })
+  if (saved) toast(title ? `Renamed to ${saved.title}` : `Back to “${saved.originalTitle}”`)
+}
+
+async function setPaused(blog: Blog, paused: boolean) {
+  const saved = await updateBlog(blog, { paused })
+  if (!saved) return
+  if (paused) {
+    toast(`Paused ${saved.title}. It won’t be in your digests.`, {
+      action: { label: 'Undo', run: () => void updateBlog(saved, { paused: false }) },
+      duration: 8000,
+    })
+  } else {
+    toast(`${saved.title} is back in your digests`)
+  }
+}
+
 async function refollow(blog: Blog) {
   try {
     const again = await api.followBlog(blog.sourceUrl)
@@ -249,6 +293,8 @@ async function refollow(blog: Blog) {
           :blog="blog"
           :highlighted="blog.id === highlightId"
           @remove="unfollow(blog)"
+          @rename="(title) => rename(blog, title)"
+          @pause="(paused) => setPaused(blog, paused)"
         />
       </TransitionGroup>
     </section>

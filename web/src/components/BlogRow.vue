@@ -1,13 +1,57 @@
 <script setup lang="ts">
-import { ChevronDown, Eye, TriangleAlert, X } from '@lucide/vue'
-import { ref } from 'vue'
+import { ChevronDown, Eye, Pause, Pencil, Play, TriangleAlert, UserMinus } from '@lucide/vue'
+import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import BlogMonogram from '@/components/ui/BlogMonogram.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiMenu from '@/components/ui/UiMenu.vue'
 import { api, type Blog, type Post } from '@/lib/api'
 import { hostLabel, postAge } from '@/lib/format'
 
 const props = defineProps<{ blog: Blog; highlighted?: boolean }>()
-defineEmits<{ remove: [] }>()
+const emit = defineEmits<{
+  remove: []
+  /** null restores the blog's own title */
+  rename: [title: string | null]
+  pause: [paused: boolean]
+}>()
+
+const menuItems = computed(() => [
+  { key: 'rename', label: 'Rename', icon: Pencil },
+  props.blog.paused
+    ? { key: 'pause', label: 'Resume in digests', icon: Play }
+    : { key: 'pause', label: 'Pause in digests', icon: Pause },
+  { key: 'remove', label: 'Unfollow', icon: UserMinus, danger: true },
+])
+
+function onMenu(key: string) {
+  if (key === 'rename') void startRename()
+  else if (key === 'pause') emit('pause', !props.blog.paused)
+  else emit('remove')
+}
+
+const editing = ref(false)
+const draft = ref('')
+const titleInput = useTemplateRef<HTMLInputElement>('titleInput')
+
+async function startRename() {
+  draft.value = props.blog.title
+  editing.value = true
+  await nextTick()
+  titleInput.value?.select()
+}
+
+// Enter or leaving the field saves; Esc cancels. Empty means "use the original".
+function saveRename() {
+  if (!editing.value) return
+  editing.value = false
+  const next = draft.value.trim()
+  const value = !next || next === props.blog.originalTitle ? null : next
+  if (value !== props.blog.customTitle) emit('rename', value)
+}
+
+function cancelRename() {
+  editing.value = false
+}
 
 const open = ref(false)
 const posts = ref<Post[] | null>(null)
@@ -26,14 +70,32 @@ async function toggle() {
 </script>
 
 <template>
-  <li class="row" :class="{ 'is-highlighted': highlighted }">
+  <li class="row" :class="{ 'is-highlighted': highlighted, 'is-paused': blog.paused }">
     <div class="row__main">
       <BlogMonogram :name="blog.title" />
       <div class="row__body">
-        <div class="row__heading">
+        <form v-if="editing" class="rename" @submit.prevent="saveRename">
+          <input
+            ref="titleInput"
+            v-model="draft"
+            class="rename__input"
+            maxlength="120"
+            aria-label="Blog name"
+            aria-describedby="rename-hint"
+            @keydown.esc.prevent="cancelRename"
+            @blur="saveRename"
+          />
+          <p id="rename-hint" class="rename__hint">
+            Enter to save · Esc to cancel · leave empty for “{{ blog.originalTitle }}”
+          </p>
+        </form>
+        <div v-else class="row__heading">
           <a :href="blog.siteUrl" target="_blank" rel="noopener" class="row__title">{{
             blog.title
           }}</a>
+          <span v-if="blog.paused" class="tag" title="Left out of your digests until you resume it">
+            <Pause :size="12" /> Paused
+          </span>
           <span
             v-if="blog.fetchMode === 'SCRAPE'"
             class="tag"
@@ -45,7 +107,10 @@ async function toggle() {
             <TriangleAlert :size="12" /> Can't reach site
           </span>
         </div>
-        <p class="row__host">{{ hostLabel(blog.siteUrl) }}</p>
+        <p class="row__host">
+          {{ hostLabel(blog.siteUrl)
+          }}<template v-if="blog.customTitle"> · originally “{{ blog.originalTitle }}”</template>
+        </p>
         <a
           v-if="blog.latestPost"
           :href="blog.latestPost.url"
@@ -70,15 +135,7 @@ async function toggle() {
         >
           <ChevronDown :size="16" class="chevron" :class="{ 'is-open': open }" />
         </UiButton>
-        <UiButton
-          variant="ghost"
-          size="sm"
-          icon
-          :aria-label="`Unfollow ${blog.title}`"
-          @click="$emit('remove')"
-        >
-          <X :size="16" />
-        </UiButton>
+        <UiMenu :label="`More actions for ${blog.title}`" :items="menuItems" @select="onMenu" />
       </div>
     </div>
 
@@ -315,5 +372,33 @@ a.row__latest:hover .row__latest-title {
   .drawer__inner {
     padding-left: 0;
   }
+}
+/* Paused: still listed, visibly quieter. */
+.row.is-paused .row__latest,
+.row.is-paused :deep(.monogram) {
+  opacity: 0.5;
+}
+
+.rename {
+  display: grid;
+  gap: 6px;
+}
+
+.rename__input {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--tide);
+  border-radius: 8px;
+  background: var(--paper-raised);
+  box-shadow: var(--ring);
+  font-weight: 600;
+  font-size: 15px;
+  outline: none;
+}
+
+.rename__hint {
+  color: var(--ink-3);
+  font-size: 12.5px;
 }
 </style>

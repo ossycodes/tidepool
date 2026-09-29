@@ -7,6 +7,9 @@ import ReadingView from '@/views/ReadingView.vue'
 const blog = (overrides: Partial<Blog> = {}): Blog => ({
   id: 'b1',
   title: 'Julia Evans',
+  originalTitle: 'Julia Evans',
+  customTitle: null,
+  paused: false,
   description: null,
   siteUrl: 'https://jvns.ca/',
   sourceUrl: 'https://jvns.ca/atom.xml',
@@ -92,6 +95,73 @@ describe('ReadingView', () => {
     expect(follow).toHaveBeenCalledWith('www.schneems.com')
     expect(wrapper.find('.row__title').text()).toBe('Schneems')
     expect(router.currentRoute.value.query.follow).toBeUndefined()
+  })
+
+  async function chooseFromMenu(wrapper: Awaited<ReturnType<typeof mountReading>>['wrapper'], label: string) {
+    await wrapper.find('.menu__trigger').trigger('click')
+    await flushPromises()
+    const item = wrapper.findAll('[role="menuitem"]').find((b) => b.text() === label)
+    expect(item, `menu item "${label}"`).toBeTruthy()
+    await item!.trigger('click')
+    await flushPromises()
+  }
+
+  it('renames a blog from the row menu', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([blog({ title: 'Essays', originalTitle: 'Essays' })])
+    const update = vi.spyOn(api, 'updateBlog').mockResolvedValue(
+      blog({ title: 'Paul Graham', originalTitle: 'Essays', customTitle: 'Paul Graham' }),
+    )
+    const { wrapper } = await mountReading()
+
+    await chooseFromMenu(wrapper, 'Rename')
+    const input = wrapper.find('input[aria-label="Blog name"]')
+    await input.setValue('  Paul Graham ')
+    await wrapper.find('form.rename').trigger('submit')
+    await flushPromises()
+
+    expect(update).toHaveBeenCalledWith('b1', { title: 'Paul Graham' })
+    expect(wrapper.find('.row__title').text()).toBe('Paul Graham')
+    expect(wrapper.find('.row__host').text()).toContain('originally “Essays”')
+  })
+
+  it('clearing the name restores the original', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([
+      blog({ title: 'Paul Graham', originalTitle: 'Essays', customTitle: 'Paul Graham' }),
+    ])
+    const update = vi
+      .spyOn(api, 'updateBlog')
+      .mockResolvedValue(blog({ title: 'Essays', originalTitle: 'Essays', customTitle: null }))
+    const { wrapper } = await mountReading()
+
+    await chooseFromMenu(wrapper, 'Rename')
+    await wrapper.find('input[aria-label="Blog name"]').setValue('')
+    await wrapper.find('form.rename').trigger('submit')
+    await flushPromises()
+
+    expect(update).toHaveBeenCalledWith('b1', { title: null })
+    expect(wrapper.find('.row__title').text()).toBe('Essays')
+  })
+
+  it('pauses a blog and shows it as paused', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([blog()])
+    const update = vi.spyOn(api, 'updateBlog').mockResolvedValue(blog({ paused: true }))
+    const { wrapper } = await mountReading()
+
+    await chooseFromMenu(wrapper, 'Pause in digests')
+
+    expect(update).toHaveBeenCalledWith('b1', { paused: true })
+    expect(wrapper.find('.row').classes()).toContain('is-paused')
+    expect(wrapper.find('.tag').text()).toContain('Paused')
+  })
+
+  it('reverts a change the API rejects', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([blog()])
+    vi.spyOn(api, 'updateBlog').mockRejectedValue(new ApiError(500, 'Nope'))
+    const { wrapper } = await mountReading()
+
+    await chooseFromMenu(wrapper, 'Pause in digests')
+
+    expect(wrapper.find('.row').classes()).not.toContain('is-paused')
   })
 
   it('labels blogs that have no feed', async () => {
