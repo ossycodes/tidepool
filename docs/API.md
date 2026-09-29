@@ -18,6 +18,8 @@ Validation errors are `400`; missing or not-yours is `404`; discovery failures a
 | GET / PATCH / DELETE | `/me` | ✓ | Settings: `digestEnabled`, `digestDay`, `digestHour`, `timezone` |
 | GET | `/blogs` | ✓ | Followed blogs with health, latest post, `customTitle`, `paused` |
 | POST | `/blogs` | ✓ | `{ url }` → follow (homepage or feed URL; RSS optional) |
+| POST | `/blogs/batch` | ✓ | `{ urls }` (1–10) → per-URL `followed` / `already` / `failed`; 30/min |
+| GET | `/blogs/export.opml` | ✓ | OPML 2.0 download of followed blogs (your titles; scraped blogs as `type="link"`) |
 | GET | `/blogs/:id` | ✓ | One followed blog |
 | PATCH | `/blogs/:id` | ✓ | `{ title?, paused? }` — rename (null restores) and pause |
 | GET | `/blogs/:id/posts` | ✓ | Recent posts, `?limit=` 1–100 |

@@ -1,10 +1,13 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { normalizeUrl } from '../common/url.js';
+import { FetchMode } from '../generated/prisma/client.js';
+import { escapeHtml } from '../mail/templates.js';
 import {
   DiscoveryError,
   DiscoveryService,
@@ -20,6 +23,16 @@ import {
 import type { UpdateBlogDto } from './dto.js';
 
 const MAX_SUBSCRIPTIONS = 500;
+/** Blogs discovered at once within one import batch. */
+const IMPORT_CONCURRENCY = 5;
+
+export type ImportResult =
+  | {
+      url: string;
+      status: 'followed' | 'already';
+      blog: ReturnType<typeof toBlogResponse>;
+    }
+  | { url: string; status: 'failed'; error: string };
 /** An unfollowed blog is re-baselined if nobody has fetched it for this long. */
 const STALE_AFTER_MS = 24 * 60 * 60_000;
 
@@ -131,6 +144,79 @@ export class BlogsService {
       update: {},
     });
     return this.get(userId, blog.id);
+  }
+
+  /** Follows several blogs, reporting each URL's outcome instead of failing the batch. */
+  async subscribeMany(userId: string, urls: string[]): Promise<ImportResult[]> {
+    const before = new Set(
+      (
+        await this.prisma.subscription.findMany({
+          where: { userId },
+          select: { blogId: true },
+        })
+      ).map((s) => s.blogId),
+    );
+
+    const results: ImportResult[] = [];
+    let next = 0;
+    const worker = async () => {
+      while (next < urls.length) {
+        const i = next++;
+        const url = urls[i];
+        try {
+          const blog = await this.subscribe(userId, url);
+          results[i] = {
+            url,
+            status: before.has(blog.id) ? 'already' : 'followed',
+            blog,
+          };
+          before.add(blog.id);
+        } catch (err) {
+          results[i] = {
+            url,
+            status: 'failed',
+            error:
+              err instanceof HttpException
+                ? err.message
+                : 'Something went wrong. Please try again.',
+          };
+        }
+      }
+    };
+    await Promise.all(
+      Array.from({ length: Math.min(IMPORT_CONCURRENCY, urls.length) }, worker),
+    );
+    return results;
+  }
+
+  /** OPML 2.0 of the reader's blogs, using their own names for them. */
+  async exportOpml(userId: string): Promise<string> {
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'asc' },
+      include: { blog: true },
+    });
+    const outlines = subscriptions.map(({ blog, customTitle }) => {
+      const title = escapeHtml(customTitle ?? blog.title);
+      const site = escapeHtml(blog.siteUrl);
+      // Scraped blogs have no feed, so they're exported as plain links.
+      return blog.fetchMode === FetchMode.FEED
+        ? `    <outline type="rss" text="${title}" title="${title}" xmlUrl="${escapeHtml(blog.sourceUrl)}" htmlUrl="${site}"/>`
+        : `    <outline type="link" text="${title}" title="${title}" url="${site}" htmlUrl="${site}"/>`;
+    });
+    return [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<opml version="2.0">',
+      '  <head>',
+      '    <title>Tidepool reading list</title>',
+      `    <dateCreated>${new Date().toUTCString()}</dateCreated>`,
+      '  </head>',
+      '  <body>',
+      ...outlines,
+      '  </body>',
+      '</opml>',
+      '',
+    ].join('\n');
   }
 
   async unsubscribe(userId: string, blogId: string): Promise<void> {

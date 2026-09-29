@@ -1,24 +1,17 @@
 <script setup lang="ts">
-import { Plus } from '@lucide/vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AddBlogForm from '@/components/AddBlogForm.vue'
+import ImportPanel from '@/components/ImportPanel.vue'
+import StarterPacks from '@/components/StarterPacks.vue'
 import BlogRow from '@/components/BlogRow.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { ApiError, api, type Blog } from '@/lib/api'
-import { postDate, timeUntil } from '@/lib/format'
+import { plural, postDate, timeUntil } from '@/lib/format'
 import { quickAddPrefix } from '@/lib/quickAdd'
 import { issueTimeLabel, nextIssueAt } from '@/lib/schedule'
 import { session } from '@/lib/session'
 import { toast } from '@/lib/toast'
-
-const SUGGESTIONS = [
-  'jvns.ca',
-  'simonwillison.net',
-  'danluu.com',
-  'overreacted.io',
-  'paulgraham.com/articles.html',
-]
 
 const blogs = ref<Blog[]>([])
 const loading = ref(true)
@@ -131,11 +124,6 @@ async function follow(raw: string) {
   }
 }
 
-function followSuggestion(suggestion: string) {
-  url.value = suggestion
-  void follow(suggestion)
-}
-
 async function unfollow(blog: Blog) {
   const previous = blogs.value
   blogs.value = previous.filter((b) => b.id !== blog.id)
@@ -193,6 +181,37 @@ async function setPaused(blog: Blog, paused: boolean) {
   }
 }
 
+const importing = ref(false)
+const importPanel = useTemplateRef<InstanceType<typeof ImportPanel>>('importPanel')
+
+/** Opens the import panel; with urls (a starter pack) it starts right away. */
+async function openImport(urls?: string[], name?: string) {
+  importing.value = true
+  await nextTick()
+  if (urls) void importPanel.value?.start(urls, name)
+}
+
+function onImported(newBlogs: Blog[]) {
+  const known = new Set(blogs.value.map((b) => b.id))
+  const added = newBlogs.filter((b) => !known.has(b.id))
+  if (added.length) blogs.value = [...added, ...blogs.value]
+}
+
+async function exportOpml() {
+  try {
+    const opml = await api.exportOpml()
+    const url = URL.createObjectURL(new Blob([opml], { type: 'text/x-opml' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'tidepool.opml'
+    link.click()
+    URL.revokeObjectURL(url)
+    toast(`Exported ${plural(blogs.value.length, 'blog')}`)
+  } catch (err) {
+    toast(err instanceof Error ? err.message : 'Couldn’t export your blogs.', { tone: 'error' })
+  }
+}
+
 async function refollow(blog: Blog) {
   try {
     const again = await api.followBlog(blog.sourceUrl)
@@ -246,9 +265,25 @@ async function refollow(blog: Blog) {
 
     <section aria-labelledby="following-heading">
       <div class="list-head">
-        <h2 id="following-heading" class="eyebrow">Following</h2>
-        <span v-if="!loading && !loadError" class="eyebrow tabular">{{ blogs.length }}</span>
+        <h2 id="following-heading" class="eyebrow">
+          Following<span v-if="!loading && !loadError" class="tabular"> · {{ blogs.length }}</span>
+        </h2>
+        <div class="list-tools">
+          <button type="button" class="text-link" :disabled="importing" @click="openImport()">
+            Import
+          </button>
+          <button v-if="blogs.length" type="button" class="text-link" @click="exportOpml">
+            Export OPML
+          </button>
+        </div>
       </div>
+
+      <ImportPanel
+        v-if="importing"
+        ref="importPanel"
+        @followed="onImported"
+        @close="importing = false"
+      />
 
       <div v-if="loading" class="skeleton-list" aria-label="Loading your blogs" role="status">
         <div v-for="n in 4" :key="n" class="skeleton-row">
@@ -269,21 +304,14 @@ async function refollow(blog: Blog) {
       <div v-else-if="blogs.length === 0" class="empty">
         <h3 class="empty__title">Nothing to read yet.</h3>
         <p class="empty__text">
-          Add a blog you already enjoy, or start with one of these. Posts that appear after you
-          follow a blog go into your next issue.
+          Add a blog you already enjoy, or start with a pack. Posts that appear after you follow
+          a blog go into your next issue.
         </p>
-        <div class="chips">
-          <button
-            v-for="suggestion in SUGGESTIONS"
-            :key="suggestion"
-            type="button"
-            class="chip"
-            :disabled="following"
-            @click="followSuggestion(suggestion)"
-          >
-            <Plus :size="14" /> {{ suggestion }}
-          </button>
-        </div>
+        <StarterPacks :busy="importing" @follow="(urls, name) => openImport(urls, name)" />
+        <p class="empty__text empty__import">
+          Moving from another reader?
+          <button type="button" class="text-link" @click="openImport()">Import an OPML file</button>.
+        </p>
       </div>
 
       <TransitionGroup v-else tag="ul" name="rows" class="rows">
@@ -445,45 +473,19 @@ async function refollow(blog: Blog) {
   color: var(--ink-2);
 }
 
-.chips {
+.list-tools {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 20px;
+  gap: 16px;
+  font-size: 13px;
 }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px 0 10px;
-  border: 1px solid var(--rule-strong);
-  border-radius: 999px;
-  background: var(--paper-raised);
-  color: var(--ink-2);
-  font-size: 13.5px;
-  cursor: pointer;
-  transition-property: border-color, color, transform;
-  transition-duration: 150ms;
-}
-
-.chip svg {
-  color: var(--tide);
-}
-
-.chip:hover:not(:disabled) {
-  border-color: var(--tide);
-  color: var(--ink);
-}
-
-.chip:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.chip:disabled {
+.list-tools .text-link:disabled {
   opacity: 0.5;
-  cursor: progress;
+  cursor: default;
+}
+
+.empty__import {
+  margin-top: 16px;
 }
 
 .notice {
