@@ -45,3 +45,14 @@ PR branches become a GitHub "stack" that blocks merging and retargeting.
 ## Public stats privacy
 `/stats` publishes totals only. A blog appears in "most followed" only with two
 or more followers, so the page never reveals what a single reader follows.
+
+## Imports run from the browser in batches
+`POST /blogs/batch` takes at most 10 URLs and the web app loops over them,
+rather than the server running a background import job. Discovery can take
+seconds per blog; small batches keep each request short, give real progress,
+and let the reader stop part-way without any job state on the server.
+
+## Starter pack blogs are verified, not guessed
+Every starter pack address was run through our own feed discovery before it
+was added. Sites that block our fetcher (HTTP 403) were left out rather than
+shipped broken; see [[Sites blocking our fetcher]].

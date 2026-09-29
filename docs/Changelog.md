@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #17 | [[OPML import and export]] (`POST /blogs/batch`, `GET /blogs/export.opml`) and [[Starter packs]]: 35 packs in 7 topics |
+| #16 | `CLAUDE.md`: resume from the vault after compaction |
 | #15 | Obsidian vault in `docs/` ([[Home]], [[Tracker.base\|tracker]], [[Decisions]]) and `CLAUDE.md` |
 | #14 | [[Rename and pause blogs]] |
 | #13 | [[Open stats]] page and `GET /stats` |
