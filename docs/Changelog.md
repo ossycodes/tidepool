@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #19 | [[Theme toggle]]: light/dark button in every header, Settings → Appearance |
+| #18 | Docs: #16 and #17 recorded as shipped |
 | #17 | [[OPML import and export]] (`POST /blogs/batch`, `GET /blogs/export.opml`) and [[Starter packs]]: 35 packs in 7 topics |
 | #16 | `CLAUDE.md`: resume from the vault after compaction |
 | #15 | Obsidian vault in `docs/` ([[Home]], [[Tracker.base\|tracker]], [[Decisions]]) and `CLAUDE.md` |
