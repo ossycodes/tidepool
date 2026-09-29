@@ -1,0 +1,47 @@
+---
+title: Decisions
+tags:
+  - decisions
+aliases:
+  - ADR
+---
+
+# Decisions
+
+Short records of choices that would surprise a newcomer. Add new ones at the bottom.
+
+## Magic-link sign-in
+No passwords. Tokens are 32 random bytes, stored only as SHA-256, single-use
+(claimed with a conditional update), 15-minute expiry. `POST /auth/magic-link`
+always returns `202` so it can't reveal which emails have accounts. A `User` is
+created on first verify, not on request, so typing emails can't fill the table.
+
+## SSRF-safe fetching
+We fetch user-supplied URLs, so every request goes through `safeFetch`: http(s)
+only, private/loopback/link-local addresses refused **at connect time** (a
+custom DNS lookup, so DNS rebinding can't bypass it), timeouts, 5 redirects,
+20 MB cap (full-content feeds like danluu.com are ~6.5 MB).
+
+## Backfill baseline
+Posts that already exist when a blog is first fetched are stored with
+`backfill = true` and never emailed; otherwise a new follow would flood the next
+digest. A blog nobody followed for 24h+ is re-baselined for the same reason.
+
+## Lenient XML parsing
+Real feeds are often invalid XML (schneems.com: `title="Buns & Bits"`,
+`title="How to "Sustain Heroku""`). We escape bare ampersands outside CDATA,
+parse strictly, and retry in loose mode on failure. A fresh parser per feed —
+a shared one leaked state and made results alternate.
+
+## Unsubscribe confirm page
+Email security scanners prefetch links, so `GET /digests/unsubscribe` only shows
+a button; `POST` unsubscribes (also serving RFC 8058 one-click). Unsubscribe
+tokens are JWTs with `typ: "unsubscribe"` and can't be used to sign in.
+
+## PRs against main
+Open every PR against `main` and merge with merge commits. PRs based on other
+PR branches become a GitHub "stack" that blocks merging and retargeting.
+
+## Public stats privacy
+`/stats` publishes totals only. A blog appears in "most followed" only with two
+or more followers, so the page never reveals what a single reader follows.

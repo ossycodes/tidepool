@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="800" height="800">
+  <!-- X crops avatars to a circle: full-bleed tile, waves kept well inside it -->
+  <rect width="32" height="32" fill="#0f766e"/>
+  <g transform="translate(16 16) scale(0.78) translate(-16 -17)">
+    <path d="M7 13.5c2.2 0 2.2-2 4.5-2s2.3 2 4.5 2 2.3-2 4.5-2 2.3 2 4.5 2" fill="none" stroke="#faf8f3" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M7 20.5c2.2 0 2.2-2 4.5-2s2.3 2 4.5 2 2.3-2 4.5-2 2.3 2 4.5 2" fill="none" stroke="#faf8f3" stroke-opacity="0.6" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+</svg>

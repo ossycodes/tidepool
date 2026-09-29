@@ -1,0 +1,28 @@
+---
+title: Changelog
+tags:
+  - changelog
+---
+
+# Changelog
+
+All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub skipped the number).
+
+| PR | Change |
+|---|---|
+| #14 | [[Rename and pause blogs]] |
+| #13 | [[Open stats]] page and `GET /stats` |
+| #12 | README screenshots; fixed header and settings overflowing on phones |
+| #11 | [[Quick add]] tip in the digest footer |
+| #10 | [[Next issue page]], [[Settings page]], homepage help line |
+| #9 | Malformed XML feeds parse reliably ([[Decisions#Lenient XML parsing]]) |
+| #8 | [[Quick add]]: prefix any URL with the app's address |
+| #7 | [[Branded emails]]; Atom HTML summaries stripped to text |
+| #6 | [[Web app]]: design system, sign-in, reading list |
+| #5 | [[Weekly digest]] at each reader's local time |
+| #4 | [[Follow any blog]]: discovery, scraping fallback, fetching |
+| #2 | [[Magic-link sign-in]] and user settings |
+| #1 | Foundation: config, Prisma schema, SSRF-safe fetch, health |
+
+> [!note] Keep this current
+> Add a row for every merged PR and link the feature note it changes.

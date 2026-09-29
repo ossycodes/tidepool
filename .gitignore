@@ -10,3 +10,8 @@ coverage
 
 # Local browser QA screenshots
 .playwright-mcp/
+
+# Obsidian: share vault settings, not personal workspace state
+docs/.obsidian/workspace*.json
+docs/.obsidian/cache
+docs/.trash/

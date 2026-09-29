@@ -7,6 +7,9 @@ ones without an RSS feed.
   SMTP (Nodemailer).
 - **Web app** ([`web/`](web/README.md)): Vue 3 + Vite. Run it with
   `cd web && npm install && npm run dev`, then open <http://localhost:5173>.
+- **Docs** ([`docs/`](docs/Home.md)): an Obsidian vault with architecture,
+  decisions, runbooks, the changelog and a feature tracker. Open `docs/` as a
+  vault in Obsidian.
 
 ## Screenshots
 
