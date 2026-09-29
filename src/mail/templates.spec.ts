@@ -7,6 +7,7 @@ describe('digestEmail', () => {
     timezone: 'UTC',
     settingsUrl: 'https://app.test/settings',
     unsubscribeUrl: 'https://api.test/digests/unsubscribe?token=t',
+    appHost: 'tidepool.test',
     sections: [
       {
         blogTitle: 'Blog <One>',
@@ -35,6 +36,15 @@ describe('digestEmail', () => {
     const { html } = digestEmail(input);
     expect(html).toContain('No. 12 · Monday, September 29');
     expect(html).toContain('one.test');
+  });
+
+  it('explains quick add in the footer, in both parts', () => {
+    const { html, text } = digestEmail(input);
+    expect(text).toContain(
+      'Quick add: prefix any URL with tidepool.test/ to quickly add it to your reading list; for example, tidepool.test/www.schneems.com.',
+    );
+    expect(html).toContain('prefix any URL with');
+    expect(html).toContain('tidepool.test/www.schneems.com');
   });
 
   it('marks test sends as previews', () => {
