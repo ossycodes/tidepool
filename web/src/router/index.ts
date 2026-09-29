@@ -20,6 +20,12 @@ const router = createRouter({
       meta: { guestOnly: true },
     },
     {
+      path: '/open',
+      name: 'open',
+      component: () => import('@/views/OpenView.vue'),
+      meta: { title: 'Open stats' },
+    },
+    {
       path: '/auth/callback',
       name: 'auth-callback',
       component: () => import('@/views/AuthCallbackView.vue'),

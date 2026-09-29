@@ -185,6 +185,8 @@ async function useDifferentEmail() {
         <a :href="X_URL" target="_blank" rel="noopener" class="text-link">@{{ X_HANDLE }}</a>
         or email
         <a :href="`mailto:${SUPPORT_EMAIL}`" class="text-link">{{ SUPPORT_EMAIL }}</a>.
+        <span class="home__foot-sep" aria-hidden="true">·</span>
+        <RouterLink to="/open" class="text-link">Open stats</RouterLink>
       </p>
     </footer>
   </div>
@@ -215,6 +217,10 @@ async function useDifferentEmail() {
   padding-bottom: 32px;
   color: var(--ink-3);
   font-size: 13.5px;
+}
+
+.home__foot-sep {
+  margin: 0 8px;
 }
 
 /* Rule on the text, not the container, so it lines up with the content edge. */

@@ -12,6 +12,7 @@ import { DigestModule } from './digest/digest.module.js';
 import { HealthController } from './health/health.controller.js';
 import { MailModule } from './mail/mail.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { StatsModule } from './stats/stats.module.js';
 import { UsersModule } from './users/users.module.js';
 
 @Module({
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module.js';
     UsersModule,
     BlogsModule,
     DigestModule,
+    StatsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

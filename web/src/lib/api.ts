@@ -51,6 +51,22 @@ export interface DigestPreview {
   sections: DigestSection[]
 }
 
+export interface PublicStats {
+  readers: number
+  activeReaders: number
+  newReadersThisWeek: number
+  follows: number
+  blogsPerReader: number
+  blogs: number
+  watchedPages: number
+  postsThisWeek: number
+  digestsSent: number
+  digestsThisWeek: number
+  lastDigestAt: string | null
+  topBlogs: { title: string; siteUrl: string; followers: number }[]
+  generatedAt: string
+}
+
 export interface DigestRecord {
   id: string
   sentAt: string
@@ -131,4 +147,6 @@ export const api = {
   digestPreview: () => request<DigestPreview>('GET', '/digests/preview'),
   digestHistory: () => request<DigestRecord[]>('GET', '/digests'),
   sendTestDigest: () => request<{ sent: boolean; postCount: number }>('POST', '/digests/test'),
+
+  publicStats: () => request<PublicStats>('GET', '/stats'),
 }

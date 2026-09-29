@@ -99,6 +99,7 @@ All routes need `Authorization: Bearer <accessToken>` unless marked public.
 | Method | Path                          | Auth   | Description                                                                                      |
 | ------ | ----------------------------- | ------ | ------------------------------------------------------------------------------------------------ |
 | GET    | `/health`                     | public | Liveness + DB check                                                                              |
+| GET    | `/stats`                      | public | Aggregate numbers for the `/open` page (cached 5 min; blogs listed only with 2+ followers)       |
 | POST   | `/auth/magic-link`            | public | `{ email }` → emails a sign-in link to `FRONTEND_URL/auth/callback?token=…`                      |
 | POST   | `/auth/verify`                | public | `{ token, timezone? }` → `{ accessToken, user }`                                                 |
 | GET    | `/me`                         | ✓      | Current user and digest settings                                                                 |
