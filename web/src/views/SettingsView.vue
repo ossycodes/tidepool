@@ -319,8 +319,9 @@ async function deleteAccount() {
   gap: 16px;
 }
 
+/* Wraps under Time on narrow screens so zone names aren't cut off. */
 .field--grow {
-  flex: 1;
+  flex: 1 1 240px;
   min-width: 0;
 }
 

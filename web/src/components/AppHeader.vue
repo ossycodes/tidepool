@@ -11,9 +11,9 @@ const links = [
 <template>
   <header class="topbar">
     <div class="container topbar__inner">
-      <RouterLink to="/reading" class="wordmark">
+      <RouterLink to="/reading" class="wordmark" aria-label="Tidepool">
         <LogoMark :size="22" />
-        <span>Tidepool</span>
+        <span class="wordmark__text">Tidepool</span>
       </RouterLink>
       <nav class="nav" aria-label="Main">
         <RouterLink
@@ -96,5 +96,30 @@ const links = [
   height: 2px;
   border-radius: 2px;
   background: var(--tide);
+}
+
+/* Three links and the wordmark don't fit a phone: keep the mark, tighten links. */
+@media (max-width: 480px) {
+  .topbar__inner {
+    gap: 12px;
+  }
+
+  .wordmark__text {
+    display: none;
+  }
+
+  .nav {
+    gap: 0;
+  }
+
+  .nav__link {
+    padding: 0 9px;
+    font-size: 13.5px;
+  }
+
+  .nav__link.is-active::after {
+    left: 9px;
+    right: 9px;
+  }
 }
 </style>
