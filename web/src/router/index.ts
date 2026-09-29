@@ -36,6 +36,18 @@ const router = createRouter({
           component: () => import('@/views/ReadingView.vue'),
           meta: { title: 'Reading list' },
         },
+        {
+          path: 'issue',
+          name: 'issue',
+          component: () => import('@/views/IssueView.vue'),
+          meta: { title: 'Next issue' },
+        },
+        {
+          path: 'settings',
+          name: 'settings',
+          component: () => import('@/views/SettingsView.vue'),
+          meta: { title: 'Settings' },
+        },
       ],
     },
     {
