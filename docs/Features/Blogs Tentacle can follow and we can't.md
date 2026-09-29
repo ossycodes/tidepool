@@ -1,9 +1,10 @@
 ---
-status: planned
+status: shipped
 type: tech-debt
 area: feeds
 priority: 3
-effort: S
+pr: 29
+shipped: 2026-09-29
 tags:
   - tech-debt
 ---

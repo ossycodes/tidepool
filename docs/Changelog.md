@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #29 | Bot-check pages get a clear message instead of "no posts found" ([[Blogs Tentacle can follow and we can't]]) |
+| #28 | Docs: #26 and #27 recorded; findings on three blogs Tentacle lists |
 | #27 | [[Starter packs]]: 46 packs, 204 blogs (restored after #25, plus a Tentacle reader's list) |
 | #26 | Docs: #24 and #25 recorded |
 | #25 | [[Sites blocking our fetcher]]: 9 of 18 blocked blogs now followable; clear message for the rest |
