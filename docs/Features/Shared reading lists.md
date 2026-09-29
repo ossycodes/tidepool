@@ -1,8 +1,10 @@
 ---
-status: in-progress
+status: shipped
 type: feature
 area: growth
 priority: 1
+pr: 21
+shipped: 2026-09-29
 aliases:
   - Public reading lists
 tags:

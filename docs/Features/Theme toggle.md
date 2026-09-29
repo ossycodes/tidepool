@@ -1,8 +1,10 @@
 ---
-status: in-progress
+status: shipped
 type: feature
 area: web
 priority: 1
+pr: 19
+shipped: 2026-09-29
 tags:
   - feature
 ---
