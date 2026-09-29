@@ -10,4 +10,4 @@ tags:
 
 # Newsletter inbox
 
-Each reader gets an address like `name@in.tidepool.app`; newsletters sent there join the weekly digest. Needs inbound email (Postmark/SES) and HTML sanitising.
+Each reader gets an address like `name@in.usetidepool.app`; newsletters sent there join the weekly digest. Needs inbound email (Postmark/SES) and HTML sanitising.

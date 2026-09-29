@@ -13,7 +13,7 @@ tags:
 - [ ] Real SMTP provider; SPF, DKIM and DMARC records ([[Email deliverability]])
 - [x] Static host serves `index.html` for every unknown path, **including dotted
       ones** like `/www.schneems.com` ([[SPA fallback for quick add]], [[Deploy the web app]])
-- [ ] `@tidepoolapp` and `help@tidepool.app` exist (switch to `@usetidepool.app`?) and are ours (`web/src/lib/brand.ts`)
+- [ ] `@tidepoolapp` and `help@usetidepool.app` exist and are ours (`web/src/lib/brand.ts`)
 - [ ] Trust the proxy for rate limiting (`app.set('trust proxy', 1)`) if behind a load balancer
 - [ ] Uptime check on `GET /health`
 - [ ] Only one instance runs the schedulers, or accept duplicate enqueues (jobs are deduplicated)

@@ -147,7 +147,7 @@ export interface DigestEmailInput {
   timezone: string;
   settingsUrl: string;
   unsubscribeUrl: string;
-  /** The web app's address without scheme, e.g. "tidepool.app", for the quick-add tip */
+  /** The web app's address without scheme, e.g. "usetidepool.app", for the quick-add tip */
   appHost: string;
 }
 
