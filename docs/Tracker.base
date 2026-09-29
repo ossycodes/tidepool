@@ -1,0 +1,69 @@
+filters:
+  and:
+    - file.inFolder("Features")
+    - 'file.ext == "md"'
+
+formulas:
+  priority_label: 'if(priority == 1, "1 · Next", if(priority == 2, "2 · Soon", if(priority == 3, "3 · Later", "")))'
+
+properties:
+  status:
+    displayName: Status
+  type:
+    displayName: Type
+  area:
+    displayName: Area
+  effort:
+    displayName: Effort
+  pr:
+    displayName: PR
+  shipped:
+    displayName: Shipped
+  formula.priority_label:
+    displayName: Priority
+
+views:
+  - type: table
+    name: Roadmap
+    filters:
+      and:
+        - 'status != "shipped"'
+        - 'type != "tech-debt"'
+    order:
+      - file.name
+      - status
+      - formula.priority_label
+      - area
+      - effort
+    groupBy:
+      property: status
+      direction: ASC
+
+  - type: table
+    name: Shipped
+    filters: 'status == "shipped"'
+    order:
+      - file.name
+      - area
+      - pr
+      - shipped
+
+  - type: table
+    name: Tech debt
+    filters: 'type == "tech-debt"'
+    order:
+      - file.name
+      - status
+      - formula.priority_label
+      - area
+      - effort
+
+  - type: table
+    name: All
+    order:
+      - file.name
+      - type
+      - status
+      - formula.priority_label
+      - area
+      - pr
