@@ -17,7 +17,8 @@ export interface StarterPack {
 }
 
 // Generated from a candidate list; every address passed Tidepool's own feed
-// discovery on 2026-09-29. Sites that block our fetcher (HTTP 403) were left out.
+// discovery on 2026-09-29, and rechecked after the fetcher fix (#25). Sites
+// that still block automated readers were left out.
 export const STARTER_PACKS: StarterPack[] = [
   {
     category: 'Tech',
@@ -113,6 +114,8 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Storytelling with Data', url: 'www.storytellingwithdata.com' },
       { name: 'The Pudding', url: 'pudding.cool' },
       { name: 'Datawrapper Blog', url: 'www.datawrapper.de/blog' },
+      { name: 'FlowingData', url: 'flowingdata.com' },
+      { name: 'Statistical Modeling', url: 'statmodeling.stat.columbia.edu' },
     ],
   },
   {
@@ -215,6 +218,19 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Smitten Kitchen', url: 'smittenkitchen.com' },
       { name: 'Budget Bytes', url: 'www.budgetbytes.com' },
       { name: 'David Lebovitz', url: 'www.davidlebovitz.com' },
+      { name: 'Serious Eats', url: 'www.seriouseats.com' },
+    ],
+  },
+  {
+    category: 'Health & wellbeing',
+    name: 'Running & endurance',
+    blurb: 'Training, races and the science of going far.',
+    blogs: [
+      { name: 'iRunFar', url: 'www.irunfar.com' },
+      { name: 'Marathon Handbook', url: 'marathonhandbook.com' },
+      { name: 'Believe in the Run', url: 'believeintherun.com' },
+      { name: 'Trail Runner', url: 'www.trailrunnermag.com' },
+      { name: "Runner's World", url: 'www.runnersworld.com' },
     ],
   },
   {
@@ -259,6 +275,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Grist', url: 'grist.org' },
       { name: 'Yale Environment 360', url: 'e360.yale.edu' },
       { name: 'Volts', url: 'www.volts.wtf' },
+      { name: 'Inside Climate News', url: 'insideclimatenews.org' },
     ],
   },
   {
@@ -270,6 +287,18 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Rest of World', url: 'restofworld.org' },
       { name: 'The Conversation', url: 'theconversation.com' },
       { name: 'kottke.org', url: 'kottke.org' },
+    ],
+  },
+  {
+    category: 'Science & ideas',
+    name: 'History',
+    blurb: 'The past, told with care and good stories.',
+    blogs: [
+      { name: 'A Collection of Unmitigated Pedantry', url: 'acoup.blog' },
+      { name: 'The Public Domain Review', url: 'publicdomainreview.org' },
+      { name: 'History Today', url: 'www.historytoday.com' },
+      { name: 'JSTOR Daily', url: 'daily.jstor.org' },
+      { name: 'HistoryExtra', url: 'www.historyextra.com' },
     ],
   },
   {
@@ -329,6 +358,18 @@ export const STARTER_PACKS: StarterPack[] = [
     ],
   },
   {
+    category: 'Culture & arts',
+    name: 'Film & TV',
+    blurb: 'Criticism and craft from people who love the screen.',
+    blogs: [
+      { name: 'RogerEbert.com', url: 'www.rogerebert.com' },
+      { name: 'IndieWire', url: 'www.indiewire.com' },
+      { name: 'No Film School', url: 'nofilmschool.com' },
+      { name: 'Film Comment', url: 'www.filmcomment.com' },
+      { name: 'Letterboxd Journal', url: 'letterboxd.com/journal' },
+    ],
+  },
+  {
     category: 'Home & life',
     name: 'Parenting & family',
     blurb: 'Thoughtful, evidence-minded parenting.',
@@ -369,6 +410,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'The Points Guy', url: 'thepointsguy.com' },
       { name: 'Legal Nomads', url: 'www.legalnomads.com' },
       { name: 'Adventurous Kate', url: 'www.adventurouskate.com' },
+      { name: 'Atlas Obscura', url: 'www.atlasobscura.com' },
     ],
   },
   {
@@ -379,6 +421,7 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'Put This On', url: 'putthison.com' },
       { name: 'Die, Workwear!', url: 'dieworkwear.com' },
       { name: 'Into Mind', url: 'intomind.com' },
+      { name: 'Permanent Style', url: 'www.permanentstyle.com' },
     ],
   },
   {
@@ -411,6 +454,17 @@ export const STARTER_PACKS: StarterPack[] = [
       { name: 'The Marginalian', url: 'www.themarginalian.org' },
       { name: "Seth's Blog", url: 'seths.blog' },
       { name: 'Wait But Why', url: 'waitbutwhy.com' },
+    ],
+  },
+  {
+    category: 'Hobbies & outdoors',
+    name: 'Cars & motoring',
+    blurb: 'Car culture, reviews and the future of driving.',
+    blogs: [
+      { name: 'Jalopnik', url: 'jalopnik.com' },
+      { name: 'The Drive', url: 'www.thedrive.com' },
+      { name: 'Electrek', url: 'electrek.co' },
+      { name: 'Car and Driver', url: 'www.caranddriver.com' },
     ],
   },
 ]
