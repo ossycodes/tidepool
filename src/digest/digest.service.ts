@@ -224,7 +224,7 @@ export class DigestService {
       this.config.get('FRONTEND_URL', { infer: true }),
     );
     const settingsUrl = new URL('/settings', frontendUrl).toString();
-    // "tidepool.app" or "example.com/tidepool": what readers type before a blog URL.
+    // "usetidepool.app" or "example.com/tidepool": what readers type before a blog URL.
     const appHost = `${frontendUrl.host}${frontendUrl.pathname}`.replace(
       /\/+$/,
       '',
