@@ -37,6 +37,11 @@ const pendingFollow = computed(() => {
     return null
   }
 })
+// Set when a signed-out visitor wants to follow blogs from a shared list.
+const fromSharedList = computed(() => {
+  const next = route.query.next
+  return typeof next === 'string' && next.startsWith('/shared/')
+})
 onBeforeUnmount(() => clearInterval(timer))
 
 function errorMessage(err: unknown): string {
@@ -116,6 +121,10 @@ async function useDifferentEmail() {
         <p v-if="pendingFollow" class="pending">
           <Plus :size="15" />
           <span>Sign in and we'll follow <strong>{{ pendingFollow }}</strong> for you.</span>
+        </p>
+        <p v-else-if="fromSharedList" class="pending">
+          <Plus :size="15" />
+          <span>Sign in and we'll take you back to the shared list to pick your blogs.</span>
         </p>
 
         <Transition name="swap" mode="out-in">

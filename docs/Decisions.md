@@ -62,3 +62,10 @@ The light/dark choice lives in `localStorage`, not on the user record. It's a
 property of the screen you're reading on (a dark phone, a light laptop), it
 works on signed-out pages, and it can be applied before first paint without
 waiting for the API.
+
+## Shared lists are anonymous
+`/shared/:id` shows blogs only: each blog's own title and latest post, never
+the sharer's email or their private renames. The id is 64 random bits, not a
+username, so links can't be guessed or enumerated, and "Make a new link"
+retires a link that spread further than intended. Sharing is off until the
+reader turns it on.

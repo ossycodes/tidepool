@@ -13,9 +13,12 @@ Validation errors are `400`; missing or not-yours is `404`; discovery failures a
 |---|---|---|---|
 | GET | `/health` | public | Liveness and database check |
 | GET | `/stats` | public | Aggregates for `/open`, cached 5 min; blogs listed only with 2+ followers |
+| GET | `/shared/:id` | public | A shared reading list: blogs by their own titles, latest post; never the reader. 404 when off. 60/min |
 | POST | `/auth/magic-link` | public | `{ email }` → emails a sign-in link (always `202`) |
 | POST | `/auth/verify` | public | `{ token, timezone? }` → `{ accessToken, user }` |
-| GET / PATCH / DELETE | `/me` | ✓ | Settings: `digestEnabled`, `digestDay`, `digestHour`, `timezone` |
+| GET / PATCH / DELETE | `/me` | ✓ | Settings: `digestEnabled`, `digestDay`, `digestHour`, `timezone`; `shareId` (read-only) |
+| POST | `/me/share` | ✓ | Turn on the shared list (keeps an existing link); `{ reset: true }` issues a new link |
+| DELETE | `/me/share` | ✓ | Turn sharing off; the link 404s |
 | GET | `/blogs` | ✓ | Followed blogs with health, latest post, `customTitle`, `paused` |
 | POST | `/blogs` | ✓ | `{ url }` → follow (homepage or feed URL; RSS optional) |
 | POST | `/blogs/batch` | ✓ | `{ urls }` (1–10) → per-URL `followed` / `already` / `failed`; 30/min |

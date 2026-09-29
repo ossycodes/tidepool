@@ -103,10 +103,13 @@ All routes need `Authorization: Bearer <accessToken>` unless marked public.
 | ------ | ----------------------------- | ------ | ------------------------------------------------------------------------------------------------ |
 | GET    | `/health`                     | public | Liveness + DB check                                                                              |
 | GET    | `/stats`                      | public | Aggregate numbers for the `/open` page (cached 5 min; blogs listed only with 2+ followers)       |
+| GET    | `/shared/:id`                 | public | A shared reading list: blogs by their own titles, never the reader                               |
 | POST   | `/auth/magic-link`            | public | `{ email }` → emails a sign-in link to `FRONTEND_URL/auth/callback?token=…`                      |
 | POST   | `/auth/verify`                | public | `{ token, timezone? }` → `{ accessToken, user }`                                                 |
 | GET    | `/me`                         | ✓      | Current user and digest settings                                                                 |
 | PATCH  | `/me`                         | ✓      | `{ digestEnabled?, digestDay? (0=Sun), digestHour?, timezone? }`                                 |
+| POST   | `/me/share`                   | ✓      | Turn on your shared list; `{ reset: true }` makes a new link                                     |
+| DELETE | `/me/share`                   | ✓      | Turn sharing off                                                                                 |
 | DELETE | `/me`                         | ✓      | Delete account and all subscriptions                                                             |
 | GET    | `/blogs`                      | ✓      | Blogs you follow, with health and latest post                                                    |
 | POST   | `/blogs`                      | ✓      | `{ url }` → follow a blog (homepage or feed URL, scheme optional)                                |

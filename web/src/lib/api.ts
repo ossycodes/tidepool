@@ -9,6 +9,8 @@ export interface User {
   digestHour: number
   timezone: string
   lastDigestSentAt: string | null
+  /** Slug for the public /shared/:id page; null while sharing is off */
+  shareId: string | null
   createdAt: string
 }
 
@@ -49,6 +51,16 @@ export interface DigestSection {
 export interface DigestPreview {
   since: string
   sections: DigestSection[]
+}
+
+/** A blog on someone's shared reading list. */
+export interface SharedBlog {
+  title: string
+  description: string | null
+  siteUrl: string
+  /** The address to follow: the feed, or the page Tidepool watches */
+  sourceUrl: string
+  latestPost: { title: string; url: string; publishedAt: string } | null
 }
 
 export interface PublicStats {
@@ -156,6 +168,8 @@ export const api = {
   me: () => request<User>('GET', '/me'),
   updateMe: (patch: SettingsPatch) => request<User>('PATCH', '/me', patch),
   deleteMe: () => request<void>('DELETE', '/me'),
+  shareList: (reset = false) => request<User>('POST', '/me/share', { reset }),
+  stopSharing: () => request<User>('DELETE', '/me/share'),
 
   blogs: () => request<Blog[]>('GET', '/blogs'),
   followBlog: (url: string) => request<Blog>('POST', '/blogs', { url }),
@@ -172,4 +186,6 @@ export const api = {
   sendTestDigest: () => request<{ sent: boolean; postCount: number }>('POST', '/digests/test'),
 
   publicStats: () => request<PublicStats>('GET', '/stats'),
+  sharedList: (id: string) =>
+    request<{ blogs: SharedBlog[] }>('GET', `/shared/${encodeURIComponent(id)}`),
 }

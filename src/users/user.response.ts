@@ -8,6 +8,8 @@ export function toUserResponse(user: User) {
     digestDay: user.digestDay,
     digestHour: user.digestHour,
     timezone: user.timezone,
+    /** Slug for the public /shared/:id page; null while sharing is off */
+    shareId: user.shareId,
     lastDigestSentAt: user.lastDigestSentAt,
     createdAt: user.createdAt,
   };

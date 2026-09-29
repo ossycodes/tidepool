@@ -14,6 +14,7 @@ const user: User = {
   digestHour: 8,
   timezone: 'UTC',
   lastDigestSentAt: null,
+  shareId: null,
   createdAt: '2025-09-01T00:00:00Z',
 }
 

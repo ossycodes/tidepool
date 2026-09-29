@@ -10,7 +10,8 @@ import { ApiError, api, type Blog } from '@/lib/api'
 import { plural, postDate, timeUntil } from '@/lib/format'
 import { quickAddPrefix } from '@/lib/quickAdd'
 import { issueTimeLabel, nextIssueAt } from '@/lib/schedule'
-import { session } from '@/lib/session'
+import { session, setUser } from '@/lib/session'
+import { copyText, shareUrl } from '@/lib/share'
 import { toast } from '@/lib/toast'
 
 const blogs = ref<Blog[]>([])
@@ -212,6 +213,20 @@ async function exportOpml() {
   }
 }
 
+/** Turns sharing on if needed, then copies the link. */
+async function shareList() {
+  try {
+    const user = session.state.user?.shareId ? session.state.user : await api.shareList()
+    setUser(user)
+    const link = shareUrl(user.shareId!)
+    const manage = { label: 'Manage', run: () => void router.push({ name: 'settings' }) }
+    if (await copyText(link)) toast('Share link copied', { action: manage })
+    else toast(`Your share link: ${link}`, { action: manage, duration: 10000 })
+  } catch (err) {
+    toast(err instanceof Error ? err.message : 'Couldn’t share your list.', { tone: 'error' })
+  }
+}
+
 async function refollow(blog: Blog) {
   try {
     const again = await api.followBlog(blog.sourceUrl)
@@ -271,6 +286,9 @@ async function refollow(blog: Blog) {
         <div class="list-tools">
           <button type="button" class="text-link" :disabled="importing" @click="openImport()">
             Import
+          </button>
+          <button v-if="blogs.length" type="button" class="text-link" @click="shareList">
+            Share
           </button>
           <button v-if="blogs.length" type="button" class="text-link" @click="exportOpml">
             Export OPML
