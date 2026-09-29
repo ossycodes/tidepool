@@ -72,3 +72,10 @@ the sharer's email or their private renames. The id is 64 random bits, not a
 username, so links can't be guessed or enumerated, and "Make a new link"
 retires a link that spread further than intended. Sharing is off until the
 reader turns it on.
+
+## We stay an identified bot
+Many Cloudflare sites rejected Node's default TLS handshake with a 403. We fix
+that by advertising the protocol we really speak (`ALPNProtocols:
+['http/1.1']`), not by pretending to be a browser: the User-Agent stays
+`TidepoolBot`, so a site that wants to block us by name still can, and we
+respect it. Sites that block everything get a plain explanation.
