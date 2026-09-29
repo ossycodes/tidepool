@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { ApiError, api, type Blog } from '@/lib/api'
+import { STARTER_PACKS } from '@/lib/starterPacks'
 import ReadingView from '@/views/ReadingView.vue'
 
 const blog = (overrides: Partial<Blog> = {}): Blog => ({
@@ -48,11 +49,21 @@ describe('ReadingView', () => {
     vi.spyOn(api, 'digestHistory').mockResolvedValue([])
   })
 
-  it('shows suggestions when nothing is followed yet', async () => {
+  it('offers starter packs when nothing is followed yet', async () => {
     vi.spyOn(api, 'blogs').mockResolvedValue([])
+    const importBlogs = vi.spyOn(api, 'importBlogs').mockResolvedValue([
+      { url: 'danluu.com', status: 'followed', blog: blog({ id: 'b9', title: 'Dan Luu' }) },
+    ])
     const { wrapper } = await mountReading()
     expect(wrapper.text()).toContain('Nothing to read yet.')
-    expect(wrapper.findAll('.chip').length).toBeGreaterThan(0)
+    expect(wrapper.findAll('.pack').length).toBeGreaterThan(3)
+
+    const follow = wrapper.findAll('.pack button')[0]!
+    await follow.trigger('click')
+    await flushPromises()
+
+    expect(importBlogs.mock.calls[0]![0]).toEqual(STARTER_PACKS[0]!.blogs.map((b) => b.url))
+    expect(wrapper.find('.row__title').text()).toBe('Dan Luu')
   })
 
   it('follows a blog and adds it to the list', async () => {

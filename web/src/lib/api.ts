@@ -77,6 +77,10 @@ export type SettingsPatch = Partial<
   Pick<User, 'digestEnabled' | 'digestDay' | 'digestHour' | 'timezone'>
 >
 
+export type ImportResult =
+  | { url: string; status: 'followed' | 'already'; blog: Blog }
+  | { url: string; status: 'failed'; error: string }
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -126,6 +130,23 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return data as T
 }
 
+async function requestText(path: string): Promise<string> {
+  const token = getToken()
+  let res: Response
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+  } catch {
+    throw new ApiError(0, "Can't reach Tidepool right now. Check your connection and try again.")
+  }
+  if (!res.ok) {
+    if (res.status === 401 && token) onUnauthorized()
+    throw new ApiError(res.status, 'Something went wrong. Please try again.')
+  }
+  return res.text()
+}
+
 export const api = {
   requestMagicLink: (email: string) =>
     request<{ ok: true }>('POST', '/auth/magic-link', { email }),
@@ -139,6 +160,8 @@ export const api = {
   blogs: () => request<Blog[]>('GET', '/blogs'),
   followBlog: (url: string) => request<Blog>('POST', '/blogs', { url }),
   unfollowBlog: (id: string) => request<void>('DELETE', `/blogs/${encodeURIComponent(id)}`),
+  importBlogs: (urls: string[]) => request<ImportResult[]>('POST', '/blogs/batch', { urls }),
+  exportOpml: () => requestText('/blogs/export.opml'),
   updateBlog: (id: string, patch: { title?: string | null; paused?: boolean }) =>
     request<Blog>('PATCH', `/blogs/${encodeURIComponent(id)}`, patch),
   blogPosts: (id: string, limit = 5) =>
