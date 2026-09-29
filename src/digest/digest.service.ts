@@ -213,10 +213,15 @@ export class DigestService {
       this.config.get('APP_URL', { infer: true }),
     );
     unsubscribeUrl.searchParams.set('token', token);
-    const settingsUrl = new URL(
-      '/settings',
+    const frontendUrl = new URL(
       this.config.get('FRONTEND_URL', { infer: true }),
-    ).toString();
+    );
+    const settingsUrl = new URL('/settings', frontendUrl).toString();
+    // "tidepool.app" or "example.com/tidepool": what readers type before a blog URL.
+    const appHost = `${frontendUrl.host}${frontendUrl.pathname}`.replace(
+      /\/+$/,
+      '',
+    );
 
     await this.mail.send({
       to: user.email,
@@ -230,6 +235,7 @@ export class DigestService {
         timezone: user.timezone,
         settingsUrl,
         unsubscribeUrl: unsubscribeUrl.toString(),
+        appHost,
       }),
       headers: {
         'List-Unsubscribe': `<${unsubscribeUrl.toString()}>`,

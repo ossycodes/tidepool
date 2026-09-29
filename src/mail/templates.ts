@@ -147,6 +147,8 @@ export interface DigestEmailInput {
   timezone: string;
   settingsUrl: string;
   unsubscribeUrl: string;
+  /** The web app's address without scheme, e.g. "tidepool.app", for the quick-add tip */
+  appHost: string;
 }
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
@@ -211,6 +213,14 @@ export function digestEmail(input: DigestEmailInput): RenderedEmail {
     )
     .join('\n\n\n');
 
+  // Mirrors the web app's quick add: <app>/www.schneems.com follows that blog.
+  const prefix = `${input.appHost}/`;
+  const example = `${prefix}www.schneems.com`;
+  const quickAddTip = {
+    html: `<strong class="tp-ink2" style="color:${COLORS.ink2};font-weight:600;">Quick add:</strong> prefix any URL with <span class="tp-ink2" style="color:${COLORS.ink2};font-weight:600;">${escapeHtml(prefix)}</span> to quickly add it to your reading list; for example, <span class="tp-ink2" style="color:${COLORS.ink2};">${escapeHtml(example)}</span>.`,
+    text: `Quick add: prefix any URL with ${prefix} to quickly add it to your reading list; for example, ${example}.`,
+  };
+
   const names = input.sections.map((s) => s.blogTitle);
   const preheader =
     names.length <= 2
@@ -223,9 +233,9 @@ export function digestEmail(input: DigestEmailInput): RenderedEmail {
       label,
       preheader,
       body: `<p class="tp-ink3" style="margin:18px 0 0;font-family:${SANS};font-size:13px;line-height:1.5;color:${COLORS.ink3};">${escapeHtml(summaryLine)}</p>${sectionsHtml}`,
-      footer: `You're getting this because you follow these blogs on Tidepool.<br>${footerLink('Manage blogs and delivery time', input.settingsUrl)} &nbsp;·&nbsp; ${footerLink('Unsubscribe', input.unsubscribeUrl)}`,
+      footer: `${quickAddTip.html}<br><br>You're getting this because you follow these blogs on Tidepool.<br>${footerLink('Manage blogs and delivery time', input.settingsUrl)} &nbsp;·&nbsp; ${footerLink('Unsubscribe', input.unsubscribeUrl)}`,
     }),
-    text: `TIDEPOOL · ${label}\n${summaryLine}\n\n\n${text}\n\n\n---\nManage blogs and delivery time: ${input.settingsUrl}\nUnsubscribe: ${input.unsubscribeUrl}`,
+    text: `TIDEPOOL · ${label}\n${summaryLine}\n\n\n${text}\n\n\n---\n${quickAddTip.text}\n\nManage blogs and delivery time: ${input.settingsUrl}\nUnsubscribe: ${input.unsubscribeUrl}`,
   };
 }
 
