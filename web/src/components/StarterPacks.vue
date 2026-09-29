@@ -1,19 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import UiButton from '@/components/ui/UiButton.vue';
-import {
-  PACK_CATEGORIES,
-  STARTER_PACKS,
-  type PackCategory,
-} from '@/lib/starterPacks';
+import { computed, ref } from 'vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import { PACK_CATEGORIES, STARTER_PACKS, type PackCategory } from '@/lib/starterPacks'
 
-defineProps<{ busy?: boolean }>();
-const emit = defineEmits<{ follow: [urls: string[], name: string] }>();
+defineProps<{ busy?: boolean }>()
+const emit = defineEmits<{ follow: [urls: string[], name: string] }>()
 
-const category = ref<PackCategory>(PACK_CATEGORIES[0]);
-const packs = computed(() =>
-  STARTER_PACKS.filter((p) => p.category === category.value),
-);
+const category = ref<PackCategory>(PACK_CATEGORIES[0])
+const packs = computed(() => STARTER_PACKS.filter((p) => p.category === category.value))
 </script>
 
 <template>

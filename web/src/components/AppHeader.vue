@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ThemeToggle from '@/components/ThemeToggle.vue'
 import LogoMark from '@/components/ui/LogoMark.vue'
 
 const links = [
@@ -26,6 +27,7 @@ const links = [
           {{ link.label }}
         </RouterLink>
       </nav>
+      <ThemeToggle />
     </div>
   </header>
 </template>
@@ -43,7 +45,6 @@ const links = [
 .topbar__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 24px;
   height: 60px;
 }
@@ -60,6 +61,7 @@ const links = [
 .nav {
   display: flex;
   gap: 4px;
+  margin-left: auto;
 }
 
 .nav__link {
@@ -101,7 +103,7 @@ const links = [
 /* Three links and the wordmark don't fit a phone: keep the mark, tighten links. */
 @media (max-width: 480px) {
   .topbar__inner {
-    gap: 12px;
+    gap: 4px;
   }
 
   .wordmark__text {

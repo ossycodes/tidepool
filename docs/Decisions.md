@@ -56,3 +56,9 @@ and let the reader stop part-way without any job state on the server.
 Every starter pack address was run through our own feed discovery before it
 was added. Sites that block our fetcher (HTTP 403) were left out rather than
 shipped broken; see [[Sites blocking our fetcher]].
+
+## Theme is a per-device setting
+The light/dark choice lives in `localStorage`, not on the user record. It's a
+property of the screen you're reading on (a dark phone, a light laptop), it
+works on signed-out pages, and it can be applied before first paint without
+waiting for the API.

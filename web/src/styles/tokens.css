@@ -4,7 +4,7 @@
  * reserved for status so the accent always means "act here".
  */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-serif: 'Newsreader Variable', ui-serif, Georgia, 'Times New Roman', serif;
@@ -45,32 +45,33 @@
   --container: 1080px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #151412;
-    --paper-raised: #1d1c19;
-    --paper-sunken: #100f0d;
-    --ink: #eeeae1;
-    --ink-2: #bcb6a9;
-    --ink-3: #8a8477;
-    --rule: #2b2925;
-    --rule-strong: #3b3833;
+/* Set on <html> by index.html (before paint) and src/lib/theme.ts. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
 
-    --tide: #5fb9ae;
-    --tide-strong: #82cbc1;
-    --tide-soft: #16302d;
-    --on-tide: #0a1d1b;
+  --paper: #151412;
+  --paper-raised: #1d1c19;
+  --paper-sunken: #100f0d;
+  --ink: #eeeae1;
+  --ink-2: #bcb6a9;
+  --ink-3: #8a8477;
+  --rule: #2b2925;
+  --rule-strong: #3b3833;
 
-    --amber: #e5ad58;
-    --amber-soft: #33260f;
-    --rose: #f28a9c;
-    --rose-soft: #3b1820;
+  --tide: #5fb9ae;
+  --tide-strong: #82cbc1;
+  --tide-soft: #16302d;
+  --on-tide: #0a1d1b;
 
-    --inverse: #eeeae1;
-    --on-inverse: #151412;
+  --amber: #e5ad58;
+  --amber-soft: #33260f;
+  --rose: #f28a9c;
+  --rose-soft: #3b1820;
 
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -12px rgb(0 0 0 / 0.7);
-    --shadow-sheet: 0 1px 2px rgb(0 0 0 / 0.5), 0 24px 48px -20px rgb(0 0 0 / 0.8);
-  }
+  --inverse: #eeeae1;
+  --on-inverse: #151412;
+
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -12px rgb(0 0 0 / 0.7);
+  --shadow-sheet: 0 1px 2px rgb(0 0 0 / 0.5), 0 24px 48px -20px rgb(0 0 0 / 0.8);
 }

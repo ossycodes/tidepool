@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import ThemeToggle from '@/components/ThemeToggle.vue'
 import LogoMark from '@/components/ui/LogoMark.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { api, type PublicStats } from '@/lib/api'
@@ -47,13 +48,16 @@ const maxFollowers = computed(() => Math.max(1, ...(stats.value?.topBlogs.map((b
       <RouterLink :to="session.isAuthenticated.value ? '/reading' : '/'" class="wordmark">
         <LogoMark :size="24" /> Tidepool
       </RouterLink>
-      <UiButton
-        :to="session.isAuthenticated.value ? '/reading' : '/'"
-        variant="secondary"
-        size="sm"
-      >
-        {{ session.isAuthenticated.value ? 'Reading list' : 'Sign in' }}
-      </UiButton>
+      <div class="open__actions">
+        <ThemeToggle />
+        <UiButton
+          :to="session.isAuthenticated.value ? '/reading' : '/'"
+          variant="secondary"
+          size="sm"
+        >
+          {{ session.isAuthenticated.value ? 'Reading list' : 'Sign in' }}
+        </UiButton>
+      </div>
     </header>
 
     <main class="container open__main">
@@ -136,6 +140,12 @@ const maxFollowers = computed(() => Math.max(1, ...(stats.value?.topBlogs.map((b
   align-items: center;
   justify-content: space-between;
   padding-top: 24px;
+}
+
+.open__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .wordmark {
