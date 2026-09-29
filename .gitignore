@@ -7,3 +7,6 @@ coverage
 
 /src/generated/prisma
 *.tsbuildinfo
+
+# Local browser QA screenshots
+.playwright-mcp/

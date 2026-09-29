@@ -3,8 +3,10 @@
 One email a week with all the new posts from the blogs you follow — even the
 ones without an RSS feed.
 
-This repo is the backend: a NestJS 12 API with Postgres (Prisma 7), Redis
-(BullMQ) and SMTP (Nodemailer).
+- **API** (repo root): NestJS 12 with Postgres (Prisma 7), Redis (BullMQ) and
+  SMTP (Nodemailer).
+- **Web app** ([`web/`](web/README.md)): Vue 3 + Vite. Run it with
+  `cd web && npm install && npm run dev`, then open <http://localhost:5173>.
 
 ## Local setup
 
