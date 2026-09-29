@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { FileUp, X } from '@lucide/vue'
-import { computed, ref } from 'vue'
+import { Check, FileUp, X } from '@lucide/vue'
+import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { api, type Blog, type ImportResult } from '@/lib/api'
 import { plural } from '@/lib/format'
+import { planBatches } from '@/lib/importPlan'
 import { parseImport } from '@/lib/opml'
-
-/** Matches the API's IMPORT_BATCH_SIZE. */
-const BATCH_SIZE = 10
 
 const emit = defineEmits<{ followed: [blogs: Blog[]]; close: [] }>()
 
@@ -17,12 +15,15 @@ const fileName = ref('')
 const title = ref('')
 const total = ref(0)
 const results = ref<ImportResult[]>([])
+const root = useTemplateRef<HTMLElement>('root')
 let stopRequested = false
 
 const detected = computed(() => parseImport(text.value))
 const processed = computed(() => results.value.length)
 const followed = computed(() => results.value.filter((r) => r.status === 'followed').length)
 const already = computed(() => results.value.filter((r) => r.status === 'already').length)
+/** The latest few outcomes, newest first, so there's always visible motion. */
+const recent = computed(() => results.value.slice(-4).reverse())
 const failed = computed(() =>
   results.value.filter((r): r is Extract<ImportResult, { status: 'failed' }> => r.status === 'failed'),
 )
@@ -42,23 +43,32 @@ async function start(urls: string[], heading = 'Importing') {
   results.value = []
   stopRequested = false
 
-  for (let i = 0; i < urls.length && !stopRequested; i += BATCH_SIZE) {
-    const batch = urls.slice(i, i + BATCH_SIZE)
-    let batchResults: ImportResult[]
-    try {
-      batchResults = await api.importBlogs(batch)
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Something went wrong.'
-      batchResults = batch.map((url) => ({ url, status: 'failed', error }))
+  // Starter packs and shared lists are clicked below the panel; bring it into view.
+  await nextTick()
+  root.value?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+
+  const { batches, parallel } = planBatches(urls)
+  let next = 0
+  async function worker() {
+    while (next < batches.length && !stopRequested) {
+      const batch = batches[next++]!
+      let batchResults: ImportResult[]
+      try {
+        batchResults = await api.importBlogs(batch)
+      } catch (err) {
+        const error = err instanceof Error ? err.message : 'Something went wrong.'
+        batchResults = batch.map((url) => ({ url, status: 'failed', error }))
+      }
+      results.value = [...results.value, ...batchResults]
+      const blogs = batchResults.flatMap((r) => (r.status === 'failed' ? [] : [r.blog]))
+      if (blogs.length) emit('followed', blogs)
     }
-    results.value = [...results.value, ...batchResults]
-    const blogs = batchResults.flatMap((r) => (r.status === 'failed' ? [] : [r.blog]))
-    if (blogs.length) emit('followed', blogs)
   }
+  await Promise.all(Array.from({ length: Math.min(parallel, batches.length) }, worker))
   phase.value = 'done'
 }
 
-/** Finishes the current batch, then stops. */
+/** Finishes the requests in flight, then stops. */
 function stop() {
   stopRequested = true
 }
@@ -74,7 +84,7 @@ defineExpose({ start })
 </script>
 
 <template>
-  <section class="import" aria-labelledby="import-title">
+  <section ref="root" class="import" aria-labelledby="import-title">
     <header class="import__head">
       <h2 id="import-title" class="import__title">
         {{ phase === 'input' ? 'Import blogs' : title }}
@@ -126,6 +136,7 @@ defineExpose({ start })
     <template v-else-if="phase === 'running'">
       <div
         class="progress"
+        :class="{ 'is-waiting': !processed }"
         role="progressbar"
         :aria-valuenow="processed"
         :aria-valuemax="total"
@@ -133,6 +144,27 @@ defineExpose({ start })
       >
         <span class="progress__bar" :style="{ width: `${total ? (processed / total) * 100 : 0}%` }" />
       </div>
+      <TransitionGroup v-if="recent.length" tag="ul" name="tick" class="ticks" aria-hidden="true">
+        <li
+          v-for="result in recent"
+          :key="result.url"
+          class="tick"
+          :class="{ 'tick--failed': result.status === 'failed' }"
+        >
+          <Check v-if="result.status !== 'failed'" :size="14" />
+          <X v-else :size="14" />
+          <span class="tick__name">{{
+            result.status === 'failed' ? result.url : result.blog.title
+          }}</span>
+          <span class="tick__note">{{
+            result.status === 'followed'
+              ? 'followed'
+              : result.status === 'already'
+                ? 'already following'
+                : 'couldn’t add'
+          }}</span>
+        </li>
+      </TransitionGroup>
       <div class="import__actions">
         <span class="import__count tabular" aria-live="polite">
           Following {{ processed }} of {{ total }}… some sites take a moment.
@@ -265,6 +297,93 @@ defineExpose({ start })
   border-radius: 999px;
   background: var(--tide);
   transition: width 300ms var(--ease-out);
+}
+
+/* Before the first blog lands, a sweep shows the work has started. */
+.progress.is-waiting {
+  position: relative;
+}
+
+.progress.is-waiting::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 35%;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--tide) 45%, transparent);
+  animation: sweep 1.4s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+
+.ticks {
+  display: grid;
+  gap: 6px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+
+.tick {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--ink-2);
+}
+
+.tick svg {
+  flex: none;
+  color: var(--tide);
+}
+
+.tick--failed svg {
+  color: var(--rose);
+}
+
+.tick__name {
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tick__note {
+  flex: none;
+  color: var(--ink-3);
+}
+
+/* Older ticks fade as new ones arrive at the top. */
+.tick:nth-child(3) {
+  opacity: 0.6;
+}
+
+.tick:nth-child(4) {
+  opacity: 0.3;
+}
+
+.tick-enter-active {
+  transition-property: opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: var(--ease-out);
+}
+
+.tick-enter-from {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.tick-leave-active {
+  display: none;
 }
 
 .import__summary {

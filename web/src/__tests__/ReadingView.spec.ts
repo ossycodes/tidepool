@@ -62,7 +62,9 @@ describe('ReadingView', () => {
     await follow.trigger('click')
     await flushPromises()
 
-    expect(importBlogs.mock.calls[0]![0]).toEqual(STARTER_PACKS[0]!.blogs.map((b) => b.url))
+    expect(importBlogs.mock.calls.flatMap((call) => call[0]).sort()).toEqual(
+      STARTER_PACKS[0]!.blogs.map((b) => b.url).sort(),
+    )
     expect(wrapper.find('.row__title').text()).toBe('Dan Luu')
   })
 
