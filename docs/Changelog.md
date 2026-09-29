@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #27 | [[Starter packs]]: 46 packs, 204 blogs (restored after #25, plus a Tentacle reader's list) |
+| #26 | Docs: #24 and #25 recorded |
 | #25 | [[Sites blocking our fetcher]]: 9 of 18 blocked blogs now followable; clear message for the rest |
 | #24 | Docs: #22 and #23 recorded |
 | #23 | Import progress you can see: panel scrolls into view, bar ticks per blog ([[OPML import and export]], [[Starter packs]]) |
