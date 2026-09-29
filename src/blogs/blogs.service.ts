@@ -17,6 +17,7 @@ import {
   toBlogResponse,
   toPostResponse,
 } from './blog.response.js';
+import type { UpdateBlogDto } from './dto.js';
 
 const MAX_SUBSCRIPTIONS = 500;
 /** An unfollowed blog is re-baselined if nobody has fetched it for this long. */
@@ -40,9 +41,7 @@ export class BlogsService {
         },
       },
     });
-    return subscriptions.map((s) =>
-      toBlogResponse(s.blog, s.createdAt, s.blog.posts[0]),
-    );
+    return subscriptions.map((s) => toBlogResponse(s.blog, s, s.blog.posts[0]));
   }
 
   async get(userId: string, blogId: string) {
@@ -57,9 +56,26 @@ export class BlogsService {
     if (!subscription) throw new NotFoundException('Blog not found');
     return toBlogResponse(
       subscription.blog,
-      subscription.createdAt,
+      subscription,
       subscription.blog.posts[0],
     );
+  }
+
+  /** Per-reader settings: a custom name, and pausing the blog in digests. */
+  async update(userId: string, blogId: string, dto: UpdateBlogDto) {
+    const data: { customTitle?: string | null; paused?: boolean } = {};
+    if (dto.title !== undefined) {
+      // Blank or null restores the blog's own title.
+      data.customTitle = dto.title?.trim() || null;
+    }
+    if (dto.paused !== undefined) data.paused = dto.paused;
+
+    const { count } = await this.prisma.subscription.updateMany({
+      where: { userId, blogId },
+      data,
+    });
+    if (count === 0) throw new NotFoundException('Blog not found');
+    return this.get(userId, blogId);
   }
 
   async subscribe(userId: string, rawUrl: string) {

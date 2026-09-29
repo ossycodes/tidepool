@@ -24,7 +24,12 @@ export interface Post {
 
 export interface Blog {
   id: string
+  /** The reader's own name for the blog if they set one, else the blog's title */
   title: string
+  originalTitle: string
+  customTitle: string | null
+  /** Followed, but left out of this reader's digests */
+  paused: boolean
   description: string | null
   siteUrl: string
   sourceUrl: string
@@ -134,6 +139,8 @@ export const api = {
   blogs: () => request<Blog[]>('GET', '/blogs'),
   followBlog: (url: string) => request<Blog>('POST', '/blogs', { url }),
   unfollowBlog: (id: string) => request<void>('DELETE', `/blogs/${encodeURIComponent(id)}`),
+  updateBlog: (id: string, patch: { title?: string | null; paused?: boolean }) =>
+    request<Blog>('PATCH', `/blogs/${encodeURIComponent(id)}`, patch),
   blogPosts: (id: string, limit = 5) =>
     request<Post[]>('GET', `/blogs/${encodeURIComponent(id)}/posts?limit=${limit}`),
 
