@@ -1,5 +1,8 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
   IsBoolean,
   IsInt,
   IsNotEmpty,
@@ -29,6 +32,18 @@ export class UpdateBlogDto {
   @IsOptional()
   @IsBoolean()
   paused?: boolean;
+}
+
+/** Largest batch the web app sends at once; it loops over bigger imports. */
+export const IMPORT_BATCH_SIZE = 10;
+
+export class ImportBlogsDto {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(IMPORT_BATCH_SIZE)
+  @IsString({ each: true })
+  @MaxLength(2048, { each: true })
+  urls: string[];
 }
 
 export class ListPostsQuery {
