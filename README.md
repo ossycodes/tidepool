@@ -110,6 +110,8 @@ All routes need `Authorization: Bearer <accessToken>` unless marked public.
 | DELETE | `/me`                         | ✓      | Delete account and all subscriptions                                                             |
 | GET    | `/blogs`                      | ✓      | Blogs you follow, with health and latest post                                                    |
 | POST   | `/blogs`                      | ✓      | `{ url }` → follow a blog (homepage or feed URL, scheme optional)                                |
+| POST   | `/blogs/batch`                | ✓      | `{ urls }` (up to 10) → follow each, reporting `followed`, `already` or `failed` per URL         |
+| GET    | `/blogs/export.opml`          | ✓      | Download the blogs you follow as an OPML file                                                    |
 | GET    | `/blogs/:id`                  | ✓      | One followed blog                                                                                |
 | GET    | `/blogs/:id/posts`            | ✓      | Recent posts, `?limit=` 1–100 (default 20)                                                       |
 | PATCH  | `/blogs/:id`                  | ✓      | `{ title?, paused? }`: your own name for the blog (`null` restores it) and pausing it in digests |

@@ -66,6 +66,19 @@ describe('ReadingView', () => {
     expect(wrapper.find('.row__title').text()).toBe('Dan Luu')
   })
 
+  it('switches starter packs by topic', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([])
+    const { wrapper } = await mountReading()
+
+    const health = wrapper.findAll('.category').find((b) => b.text() === 'Health & wellbeing')!
+    await health.trigger('click')
+
+    expect(health.attributes('aria-pressed')).toBe('true')
+    expect(wrapper.findAll('.pack__name').map((n) => n.text())).toEqual(
+      STARTER_PACKS.filter((p) => p.category === 'Health & wellbeing').map((p) => p.name),
+    )
+  })
+
   it('follows a blog and adds it to the list', async () => {
     vi.spyOn(api, 'blogs').mockResolvedValue([])
     const follow = vi.spyOn(api, 'followBlog').mockResolvedValue(blog())
