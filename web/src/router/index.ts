@@ -26,6 +26,12 @@ const router = createRouter({
       meta: { title: 'Open stats' },
     },
     {
+      path: '/shared/:id',
+      name: 'shared',
+      component: () => import('@/views/SharedView.vue'),
+      meta: { title: 'Shared reading list' },
+    },
+    {
       path: '/auth/callback',
       name: 'auth-callback',
       component: () => import('@/views/AuthCallbackView.vue'),

@@ -29,3 +29,10 @@ export class UpdateSettingsDto {
   @IsTimeZone()
   timezone?: string;
 }
+
+export class ShareDto {
+  /** Replace the current link with a new one, so the old link stops working. */
+  @IsOptional()
+  @IsBoolean()
+  reset?: boolean;
+}

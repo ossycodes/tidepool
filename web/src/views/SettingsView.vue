@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, LogOut } from '@lucide/vue'
+import { Check, Copy, LogOut } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -9,6 +9,7 @@ import { api, type SettingsPatch, type User } from '@/lib/api'
 import { timeUntil } from '@/lib/format'
 import { deviceTimeZone, hourLabel, issueTimeLabel, nextIssueAt } from '@/lib/schedule'
 import { session, setUser, signOut } from '@/lib/session'
+import { copyText, shareUrl } from '@/lib/share'
 import { useTheme, type ThemePreference } from '@/lib/theme'
 import { toast } from '@/lib/toast'
 
@@ -99,6 +100,30 @@ const timezone = computed({
   get: () => user.value?.timezone ?? 'UTC',
   set: (timezone) => void save({ timezone }),
 })
+
+const sharingBusy = ref(false)
+const shareLink = computed(() => (user.value?.shareId ? shareUrl(user.value.shareId) : ''))
+const sharing = computed({
+  get: () => !!user.value?.shareId,
+  set: (on) => void updateSharing(on ? 'on' : 'off'),
+})
+
+async function updateSharing(action: 'on' | 'off' | 'reset') {
+  sharingBusy.value = true
+  try {
+    setUser(action === 'off' ? await api.stopSharing() : await api.shareList(action === 'reset'))
+    if (action === 'reset') toast('New link ready. The old one no longer works.')
+  } catch (err) {
+    toast(err instanceof Error ? err.message : 'Couldn’t change sharing.', { tone: 'error' })
+  } finally {
+    sharingBusy.value = false
+  }
+}
+
+async function copyShareLink() {
+  if (await copyText(shareLink.value)) toast('Link copied')
+  else toast('Couldn’t copy. Select the link and copy it instead.', { tone: 'error' })
+}
 
 function signOutNow() {
   signOut()
@@ -201,6 +226,53 @@ async function deleteAccount() {
               Digests are paused. Nothing will be sent until you turn them back on.
             </template>
           </p>
+        </div>
+      </section>
+
+      <section class="group" aria-labelledby="sharing-heading">
+        <div class="group__intro">
+          <h2 id="sharing-heading" class="group__title">Sharing</h2>
+          <p class="group__text">
+            Let friends see the blogs you follow and pick the ones they like.
+          </p>
+        </div>
+        <div class="group__body">
+          <div class="field field--inline">
+            <div>
+              <p class="field__label">Share my reading list</p>
+              <p class="field__hint">
+                Shows your blogs by their own names. Never your email or your renames.
+              </p>
+            </div>
+            <UiSwitch v-model="sharing" label="Share my reading list" :disabled="sharingBusy" />
+          </div>
+
+          <div v-if="shareLink" class="field">
+            <label class="field__label" for="share-link">Your link</label>
+            <div class="share">
+              <input
+                id="share-link"
+                class="share__link"
+                :value="shareLink"
+                readonly
+                @focus="($event.target as HTMLInputElement).select()"
+              />
+              <UiButton variant="secondary" size="sm" @click="copyShareLink">
+                <Copy :size="14" /> Copy
+              </UiButton>
+            </div>
+            <p class="share__links">
+              <a :href="shareLink" target="_blank" rel="noopener" class="text-link">Open</a>
+              <button
+                type="button"
+                class="text-link"
+                :disabled="sharingBusy"
+                @click="updateSharing('reset')"
+              >
+                Make a new link
+              </button>
+            </p>
+          </div>
         </div>
       </section>
 
@@ -367,6 +439,29 @@ async function deleteAccount() {
 .field__label {
   font-weight: 550;
   font-size: 14px;
+}
+
+.share {
+  display: flex;
+  gap: 8px;
+}
+
+.share__link {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 10px;
+  background: var(--paper-sunken);
+  color: var(--ink-2);
+  font: 13.5px ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.share__links {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
 }
 
 .field__hint {

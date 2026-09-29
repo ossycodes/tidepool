@@ -13,6 +13,7 @@ const user: User = {
   digestHour: 8,
   timezone: 'Africa/Lagos',
   lastDigestSentAt: null,
+  shareId: null,
   createdAt: '2025-09-01T00:00:00Z',
 }
 
@@ -63,6 +64,19 @@ describe('SettingsView', () => {
 
     expect(update).toHaveBeenCalledWith({ digestEnabled: false })
     expect(wrapper.find('.summary').text()).toContain('Digests are paused')
+  })
+
+  it('turns on sharing and shows the link', async () => {
+    const share = vi.spyOn(api, 'shareList').mockResolvedValue({ ...user, shareId: 'abc123DEF_x' })
+    const { wrapper } = await mountSettings()
+
+    await wrapper.find('[role="switch"][aria-label="Share my reading list"]').trigger('click')
+    await flushPromises()
+
+    expect(share).toHaveBeenCalledWith(false)
+    expect((wrapper.find('#share-link').element as HTMLInputElement).value).toBe(
+      `${window.location.origin}/shared/abc123DEF_x`,
+    )
   })
 
   it('reverts a change the API rejects', async () => {

@@ -20,7 +20,7 @@ erDiagram
 
 | Model | Notes |
 |---|---|
-| `User` | `digestDay` (0 = Sunday), `digestHour` (0–23), `timezone` (IANA), `digestEnabled`, `lastDigestSentAt` (the weekly claim) |
+| `User` | `digestDay` (0 = Sunday), `digestHour` (0–23), `timezone` (IANA), `digestEnabled`, `lastDigestSentAt` (the weekly claim), `shareId` (unique slug for `/shared/:id`, null while sharing is off) |
 | `LoginToken` | Keyed by **email**, stores only a SHA-256 hash; a `User` is created on first verify |
 | `Blog` | Shared by all readers. `sourceUrl` (feed or page) is unique; `fetchMode` is `FEED` or `SCRAPE`; fetch health in `consecutiveFailures`, `lastError`, `nextFetchAt` |
 | `Subscription` | One reader following one blog. `customTitle` (their own name) and `paused` (left out of their digests) — see [[Rename and pause blogs]] |

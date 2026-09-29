@@ -20,6 +20,8 @@ model User {
   /// IANA timezone name, e.g. "Europe/London"
   timezone         String    @default("UTC")
   lastDigestSentAt DateTime? @db.Timestamptz
+  /// Random slug for the public /shared/:id page; null while sharing is off
+  shareId          String?   @unique
   createdAt        DateTime  @default(now()) @db.Timestamptz
   updatedAt        DateTime  @updatedAt @db.Timestamptz
 
