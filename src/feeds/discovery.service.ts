@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ACCEPT_FEED, ACCEPT_HTML, HttpClient } from '../common/http-client.js';
 import { normalizeUrl } from '../common/url.js';
-import type { FetchResult } from '../common/safe-fetch.js';
+import { HttpStatusError, type FetchResult } from '../common/safe-fetch.js';
 import { FetchMode } from '../generated/prisma/client.js';
 import {
   detectFeed,
@@ -24,6 +24,9 @@ export interface DiscoveredBlog {
 /** User-facing reason we couldn't add a blog. */
 export class DiscoveryError extends Error {}
 
+/** Statuses sites use to turn away automated readers. */
+const BLOCKED_STATUSES = new Set([401, 402, 403, 429]);
+
 const COMMON_FEED_PATHS = [
   'feed',
   'rss.xml',
@@ -42,6 +45,9 @@ export class DiscoveryService {
     try {
       page = await this.http.get(url, ACCEPT_HTML);
     } catch (err) {
+      if (err instanceof HttpStatusError && BLOCKED_STATUSES.has(err.status)) {
+        return this.discoverBlocked(url);
+      }
       throw new DiscoveryError(
         `Couldn't load ${url}: ${(err as Error).message}`,
       );
@@ -91,6 +97,28 @@ export class DiscoveryService {
       siteUrl,
       title: fallbackTitle,
       description: meta.description,
+    };
+  }
+
+  /**
+   * Some sites block their pages but still serve the feed (it's meant for
+   * readers), so try the usual feed addresses before giving up.
+   */
+  private async discoverBlocked(url: string): Promise<DiscoveredBlog> {
+    const found = await this.guessFeed(url);
+    const host = new URL(url).hostname.replace(/^www\./, '');
+    if (!found) {
+      throw new DiscoveryError(
+        `${host} blocks automated readers like Tidepool, so we can't follow it. If it has an RSS feed, try pasting the feed's address.`,
+      );
+    }
+    const siteUrl = found.feed.siteUrl ?? normalizeUrl(new URL(url).origin);
+    return {
+      fetchMode: FetchMode.FEED,
+      sourceUrl: found.url,
+      siteUrl,
+      title: found.feed.title ?? host,
+      description: found.feed.description,
     };
   }
 

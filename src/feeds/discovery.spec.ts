@@ -1,5 +1,9 @@
 import type { HttpClient } from '../common/http-client.js';
-import { FetchError, type FetchResult } from '../common/safe-fetch.js';
+import {
+  FetchError,
+  HttpStatusError,
+  type FetchResult,
+} from '../common/safe-fetch.js';
 import { DiscoveryError, DiscoveryService } from './discovery.service.js';
 
 const RSS = (title: string) => `<?xml version="1.0"?>
@@ -11,10 +15,13 @@ const PAGE = (head = '', body = '') =>
   `<!doctype html><html><head><title>My Blog</title>${head}</head><body>${body}</body></html>`;
 
 class FakeHttp {
-  constructor(private readonly pages: Record<string, string>) {}
+  constructor(private readonly pages: Record<string, string | number>) {}
 
   get(url: string): Promise<FetchResult> {
     const body = this.pages[url];
+    if (typeof body === 'number') {
+      return Promise.reject(new HttpStatusError(body, url));
+    }
     if (body === undefined) {
       return Promise.reject(new FetchError(`HTTP 404 fetching ${url}`));
     }
@@ -22,7 +29,7 @@ class FakeHttp {
   }
 }
 
-const discover = (pages: Record<string, string>, url: string) =>
+const discover = (pages: Record<string, string | number>, url: string) =>
   new DiscoveryService(new FakeHttp(pages) as unknown as HttpClient).discover(
     url,
   );
@@ -96,6 +103,31 @@ describe('DiscoveryService', () => {
     await expect(
       discover({ 'https://blog.test/': PAGE() }, 'https://blog.test/'),
     ).rejects.toThrow(DiscoveryError);
+  });
+
+  it('finds the feed of a site that blocks its pages', async () => {
+    const result = await discover(
+      {
+        'https://blocked.test/': 403,
+        'https://blocked.test/feed': RSS('Still Reading'),
+      },
+      'https://blocked.test/',
+    );
+    expect(result).toMatchObject({
+      fetchMode: 'FEED',
+      sourceUrl: 'https://blocked.test/feed',
+      siteUrl: 'https://blog.test/',
+      title: 'Still Reading',
+    });
+  });
+
+  it('explains when a site blocks automated readers everywhere', async () => {
+    await expect(
+      discover(
+        { 'https://www.blocked.test/': 403 },
+        'https://www.blocked.test/',
+      ),
+    ).rejects.toThrow(/blocked\.test blocks automated readers like Tidepool/);
   });
 
   it('fails clearly when the page cannot be loaded', async () => {

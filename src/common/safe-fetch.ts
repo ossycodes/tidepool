@@ -2,6 +2,7 @@ import { lookup as dnsLookup, type LookupAddress } from 'node:dns';
 import http from 'node:http';
 import https from 'node:https';
 import { BlockList, isIP, type LookupFunction } from 'node:net';
+import type { ConnectionOptions } from 'node:tls';
 import zlib from 'node:zlib';
 
 // We fetch arbitrary user-supplied URLs, so every request is guarded against
@@ -47,6 +48,16 @@ for (const [network, prefix] of [
 }
 
 export class FetchError extends Error {}
+
+/** The server answered, but with an error status. */
+export class HttpStatusError extends FetchError {
+  constructor(
+    readonly status: number,
+    url: string,
+  ) {
+    super(`HTTP ${status} fetching ${url}`);
+  }
+}
 
 export interface FetchResult {
   /** Final URL after redirects */
@@ -110,58 +121,62 @@ function request(url: URL, accept: string): Promise<RawResponse> {
       };
     const fail = done(reject);
 
-    const req = client.request(
-      url,
-      {
-        method: 'GET',
-        lookup: safeLookup,
-        headers: {
-          'user-agent': USER_AGENT,
-          accept,
-          'accept-encoding': 'gzip, deflate, br',
-        },
+    // The agent passes TLS options through to tls.connect.
+    const options: https.RequestOptions &
+      Pick<ConnectionOptions, 'ALPNProtocols'> = {
+      method: 'GET',
+      lookup: safeLookup,
+      // Cloudflare's bot protection turns away Node's default TLS handshake
+      // (403) even for an identified bot. Advertising the protocol we
+      // actually speak changes that fingerprint; the User-Agent still says
+      // who we are.
+      ALPNProtocols: ['http/1.1'],
+      headers: {
+        'user-agent': USER_AGENT,
+        accept,
+        'accept-language': 'en-US,en;q=0.9,*;q=0.5',
+        'accept-encoding': 'gzip, deflate, br',
       },
-      (res) => {
-        const status = res.statusCode ?? 0;
-        if (status >= 300 && status < 400 && res.headers.location) {
-          res.resume();
-          done(resolve)({
-            status,
-            location: res.headers.location,
-            contentType: '',
-            body: '',
-          });
+    };
+    const req = client.request(url, options, (res) => {
+      const status = res.statusCode ?? 0;
+      if (status >= 300 && status < 400 && res.headers.location) {
+        res.resume();
+        done(resolve)({
+          status,
+          location: res.headers.location,
+          contentType: '',
+          body: '',
+        });
+        return;
+      }
+
+      let stream: NodeJS.ReadableStream = res;
+      const encoding = res.headers['content-encoding'];
+      if (encoding === 'gzip') stream = res.pipe(zlib.createGunzip());
+      else if (encoding === 'deflate') stream = res.pipe(zlib.createInflate());
+      else if (encoding === 'br')
+        stream = res.pipe(zlib.createBrotliDecompress());
+
+      const chunks: Buffer[] = [];
+      let size = 0;
+      stream.on('data', (chunk: Buffer) => {
+        size += chunk.length;
+        if (size > MAX_BYTES) {
+          req.destroy(new FetchError(`Response too large: ${url.href}`));
           return;
         }
-
-        let stream: NodeJS.ReadableStream = res;
-        const encoding = res.headers['content-encoding'];
-        if (encoding === 'gzip') stream = res.pipe(zlib.createGunzip());
-        else if (encoding === 'deflate')
-          stream = res.pipe(zlib.createInflate());
-        else if (encoding === 'br')
-          stream = res.pipe(zlib.createBrotliDecompress());
-
-        const chunks: Buffer[] = [];
-        let size = 0;
-        stream.on('data', (chunk: Buffer) => {
-          size += chunk.length;
-          if (size > MAX_BYTES) {
-            req.destroy(new FetchError(`Response too large: ${url.href}`));
-            return;
-          }
-          chunks.push(chunk);
-        });
-        stream.on('end', () =>
-          done(resolve)({
-            status,
-            contentType: String(res.headers['content-type'] ?? ''),
-            body: Buffer.concat(chunks).toString('utf8'),
-          }),
-        );
-        stream.on('error', fail);
-      },
-    );
+        chunks.push(chunk);
+      });
+      stream.on('end', () =>
+        done(resolve)({
+          status,
+          contentType: String(res.headers['content-type'] ?? ''),
+          body: Buffer.concat(chunks).toString('utf8'),
+        }),
+      );
+      stream.on('error', fail);
+    });
     req.on('error', fail);
     req.end();
   });
@@ -186,7 +201,7 @@ export async function safeFetch(
       continue;
     }
     if (res.status >= 400) {
-      throw new FetchError(`HTTP ${res.status} fetching ${url.href}`);
+      throw new HttpStatusError(res.status, url.href);
     }
     return { url: url.href, ...res };
   }
