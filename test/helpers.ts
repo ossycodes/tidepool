@@ -4,6 +4,8 @@ import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
+import { HttpClient } from '../src/common/http-client.js';
+import { FetchError, type FetchResult } from '../src/common/safe-fetch.js';
 import { MailService, type MailMessage } from '../src/mail/mail.service.js';
 
 export class FakeMailService {
@@ -19,17 +21,35 @@ export class FakeMailService {
   }
 }
 
+/** Serves in-memory pages instead of hitting the network. */
+export class FakeHttpClient {
+  readonly pages = new Map<string, string>();
+  readonly requests: string[] = [];
+
+  get(url: string): Promise<FetchResult> {
+    this.requests.push(url);
+    const body = this.pages.get(url);
+    if (body === undefined) {
+      return Promise.reject(new FetchError(`HTTP 404 fetching ${url}`));
+    }
+    return Promise.resolve({ url, status: 200, contentType: '', body });
+  }
+}
+
 export async function createTestApp() {
   const mail = new FakeMailService();
+  const http = new FakeHttpClient();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(MailService)
     .useValue(mail)
+    .overrideProvider(HttpClient)
+    .useValue(http)
     .compile();
 
   const app: INestApplication<App> = moduleRef.createNestApplication();
   configureApp(app);
   await app.init();
-  return { app, mail, moduleRef };
+  return { app, mail, http, moduleRef };
 }
 
 export function uniqueEmail(prefix = 'e2e') {

@@ -8,7 +8,8 @@ import zlib from 'node:zlib';
 // SSRF: only http(s), and every resolved address (checked at connect time, so
 // DNS rebinding can't slip through) must be publicly routable.
 
-const MAX_BYTES = 5 * 1024 * 1024;
+// Full-content feeds get big (danluu.com/atom.xml is ~6.5 MB).
+const MAX_BYTES = 20 * 1024 * 1024;
 const TIMEOUT_MS = 10_000;
 const MAX_REDIRECTS = 5;
 const USER_AGENT =
