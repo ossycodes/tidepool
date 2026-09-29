@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #25 | [[Sites blocking our fetcher]]: 9 of 18 blocked blogs now followable; clear message for the rest |
+| #24 | Docs: #22 and #23 recorded |
 | #23 | Import progress you can see: panel scrolls into view, bar ticks per blog ([[OPML import and export]], [[Starter packs]]) |
 | #22 | Docs: #18, #19 and #21 recorded as shipped (#20 closed in its favour) |
 | #21 | [[Shared reading lists]]: `/shared/:id` pages, Settings → Sharing |

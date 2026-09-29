@@ -1,8 +1,10 @@
 ---
-status: in-progress
+status: shipped
 type: tech-debt
 area: feeds
 priority: 2
+pr: 25
+shipped: 2026-09-29
 tags:
   - tech-debt
 ---
