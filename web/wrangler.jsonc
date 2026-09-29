@@ -1,0 +1,13 @@
+// Tidepool web app on Cloudflare (Workers static assets, the successor to Pages).
+// Deploy with `npm run deploy` (Wrangler needs Node 22+).
+{
+  "name": "tidepool",
+  "compatibility_date": "2026-09-29",
+  "assets": {
+    "directory": "./dist-cloudflare",
+    // Unknown paths get index.html, so app routes and quick add
+    // (usetidepool.app/www.schneems.com) are handled by the Vue router.
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [{ "pattern": "usetidepool.app", "custom_domain": true }]
+}
