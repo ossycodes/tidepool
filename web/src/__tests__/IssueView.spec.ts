@@ -12,6 +12,8 @@ const user: User = {
   digestEnabled: true,
   digestDay: 1,
   digestHour: 8,
+  digestFrequency: 'WEEKLY',
+  digestMinPosts: 1,
   timezone: 'UTC',
   lastDigestSentAt: null,
   shareId: null,

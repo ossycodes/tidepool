@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSwitch from '@/components/ui/UiSwitch.vue'
-import { api, type SettingsPatch, type User } from '@/lib/api'
+import { api, type DigestFrequency, type SettingsPatch, type User } from '@/lib/api'
 import { timeUntil } from '@/lib/format'
 import { deviceTimeZone, hourLabel, issueTimeLabel, nextIssueAt } from '@/lib/schedule'
 import { session, setUser, signOut } from '@/lib/session'
@@ -36,6 +36,18 @@ const themePreference = computed({
   get: () => preference.value,
   set: setThemePreference,
 })
+const FREQUENCIES: { value: DigestFrequency; label: string }[] = [
+  { value: 'DAILY', label: 'Daily' },
+  { value: 'WEEKLY', label: 'Weekly' },
+  { value: 'FORTNIGHTLY', label: 'Every 2 weeks' },
+  { value: 'MONTHLY', label: 'Monthly' },
+]
+const MIN_POSTS = [
+  { value: 1, label: 'Any new post' },
+  { value: 3, label: 'At least 3 new posts' },
+  { value: 5, label: 'At least 5 new posts' },
+  { value: 10, label: 'At least 10 new posts' },
+]
 const HOURS = Array.from({ length: 24 }, (_, hour) => ({ value: hour, label: hourLabel(hour) }))
 
 function offsetLabel(timeZone: string): string {
@@ -96,6 +108,32 @@ const digestHour = computed({
   get: () => user.value?.digestHour ?? 8,
   set: (digestHour) => void save({ digestHour }),
 })
+const digestFrequency = computed({
+  get: () => user.value?.digestFrequency ?? 'WEEKLY',
+  set: (digestFrequency) => void save({ digestFrequency }),
+})
+const digestMinPosts = computed({
+  get: () => user.value?.digestMinPosts ?? 1,
+  set: (digestMinPosts) => void save({ digestMinPosts }),
+})
+/** Keeps a custom minimum set through the API selectable. */
+const minPostOptions = computed(() =>
+  MIN_POSTS.some((o) => o.value === digestMinPosts.value)
+    ? MIN_POSTS
+    : [
+        ...MIN_POSTS,
+        { value: digestMinPosts.value, label: `At least ${digestMinPosts.value} new posts` },
+      ],
+)
+const cadence = computed(
+  () =>
+    ({
+      DAILY: 'One email a day, at the time you choose.',
+      WEEKLY: 'One email a week, at the time you choose.',
+      FORTNIGHTLY: 'One email every two weeks, at the time you choose.',
+      MONTHLY: 'One email a month, at the time you choose.',
+    })[digestFrequency.value],
+)
 const timezone = computed({
   get: () => user.value?.timezone ?? 'UTC',
   set: (timezone) => void save({ timezone }),
@@ -169,23 +207,35 @@ async function deleteAccount() {
               <span v-if="saved" class="saved" role="status"><Check :size="14" /> Saved</span>
             </Transition>
           </h2>
-          <p class="group__text">One email a week, at the time you choose.</p>
+          <p class="group__text">{{ cadence }}</p>
         </div>
 
         <div class="group__body">
           <div class="field field--inline">
             <div>
-              <p class="field__label">Weekly digest</p>
+              <p class="field__label">Email digest</p>
               <p class="field__hint">
                 {{ digestEnabled ? 'On' : 'Paused. Your reading list stays saved.' }}
               </p>
             </div>
-            <UiSwitch v-model="digestEnabled" label="Weekly digest" />
+            <UiSwitch v-model="digestEnabled" label="Email digest" />
           </div>
 
           <div class="field" :class="{ 'is-muted': !digestEnabled }">
+            <p class="field__label">How often</p>
+            <UiSegmented v-model="digestFrequency" label="How often" :options="FREQUENCIES" />
+          </div>
+
+          <div
+            v-if="digestFrequency !== 'DAILY'"
+            class="field"
+            :class="{ 'is-muted': !digestEnabled }"
+          >
             <p class="field__label">Day</p>
             <UiSegmented v-model="digestDay" label="Delivery day" :options="DAYS" />
+            <p v-if="digestFrequency === 'MONTHLY'" class="field__hint">
+              The first {{ LONG_DAYS[digestDay] }} of each month.
+            </p>
           </div>
 
           <div class="field-row" :class="{ 'is-muted': !digestEnabled }">
@@ -216,11 +266,30 @@ async function deleteAccount() {
             </div>
           </div>
 
+          <label class="field" :class="{ 'is-muted': !digestEnabled }">
+            <span class="field__label">Send when there's</span>
+            <select v-model.number="digestMinPosts" class="select select--auto">
+              <option v-for="option in minPostOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+            <span class="field__hint">
+              {{
+                digestMinPosts > 1
+                  ? 'Quieter issues wait, and their posts roll into the next one.'
+                  : 'You get an issue whenever something new was posted.'
+              }}
+            </span>
+          </label>
+
           <p class="summary" aria-live="polite">
             <template v-if="nextIssue">
               Your next issue arrives
               <strong>{{ issueTimeLabel(nextIssue, user.timezone) }}</strong>,
-              {{ timeUntil(nextIssue) }}.
+              {{ timeUntil(nextIssue)
+              }}<template v-if="digestMinPosts > 1"
+                >, if there are at least {{ digestMinPosts }} new posts</template
+              >.
             </template>
             <template v-else>
               Digests are paused. Nothing will be sent until you turn them back on.
@@ -495,6 +564,11 @@ async function deleteAccount() {
   cursor: pointer;
   transition-property: border-color, box-shadow;
   transition-duration: 150ms;
+}
+
+.select--auto {
+  justify-self: start;
+  width: auto;
 }
 
 .select:hover {

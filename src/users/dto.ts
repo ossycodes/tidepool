@@ -1,5 +1,7 @@
+import { DigestFrequency } from '../generated/prisma/client.js';
 import {
   IsBoolean,
+  IsEnum,
   IsInt,
   IsOptional,
   IsTimeZone,
@@ -28,6 +30,17 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsTimeZone()
   timezone?: string;
+
+  @IsOptional()
+  @IsEnum(DigestFrequency)
+  digestFrequency?: DigestFrequency;
+
+  /** Hold the digest until at least this many new posts have piled up. */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  digestMinPosts?: number;
 }
 
 export class ShareDto {
