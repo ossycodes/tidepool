@@ -59,6 +59,15 @@ async function mountIssue() {
 }
 
 describe('IssueView', () => {
+  it('shows the error without guessing an issue number when loading fails', async () => {
+    vi.spyOn(api, 'digestPreview').mockRejectedValue(new Error('Tidepool is taking too long'))
+    vi.spyOn(api, 'digestHistory').mockResolvedValue([])
+    const wrapper = await mountIssue()
+
+    expect(wrapper.find('.notice').text()).toContain('Tidepool is taking too long')
+    expect(wrapper.find('.eyebrow').text()).toBe('Next issue')
+  })
+
   beforeEach(() => {
     vi.restoreAllMocks()
     setUser(user)

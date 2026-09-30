@@ -143,22 +143,47 @@ export function configureApi(options: {
   onUnauthorized = options.onUnauthorized
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+/** Most requests answer in well under a second; this only catches a stuck server. */
+const DEFAULT_TIMEOUT_MS = 15_000
+/** Following blogs runs feed discovery, which can take a while per site. */
+const DISCOVERY_TIMEOUT_MS = 90_000
+/** Sending a preview waits on the mail server. */
+const MAIL_TIMEOUT_MS = 45_000
+
+/**
+ * fetch with a deadline, so a server that accepts the connection but never
+ * answers shows an error instead of an endless loader.
+ */
+async function send(path: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  try {
+    return await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      signal: typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(timeoutMs) : undefined,
+    })
+  } catch (err) {
+    if (err instanceof DOMException && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+      throw new ApiError(0, 'Tidepool is taking too long to respond. Try again in a moment.')
+    }
+    throw new ApiError(0, "Can't reach Tidepool right now. Check your connection and try again.")
+  }
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+): Promise<T> {
   const token = getToken()
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
 
-  let res: Response
-  try {
-    res = await fetch(`${BASE_URL}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
-  } catch {
-    throw new ApiError(0, "Can't reach Tidepool right now. Check your connection and try again.")
-  }
+  const res = await send(
+    path,
+    { method, headers, body: body === undefined ? undefined : JSON.stringify(body) },
+    timeoutMs,
+  )
 
   if (res.status === 204) return undefined as T
   const data = (await res.json().catch(() => null)) as { message?: string | string[] } | null
@@ -173,14 +198,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
 async function requestText(path: string): Promise<string> {
   const token = getToken()
-  let res: Response
-  try {
-    res = await fetch(`${BASE_URL}${path}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-  } catch {
-    throw new ApiError(0, "Can't reach Tidepool right now. Check your connection and try again.")
-  }
+  const res = await send(
+    path,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+    DEFAULT_TIMEOUT_MS,
+  )
   if (!res.ok) {
     if (res.status === 401 && token) onUnauthorized()
     throw new ApiError(res.status, 'Something went wrong. Please try again.')
@@ -203,9 +225,11 @@ export const api = {
   stopSharing: () => request<User>('DELETE', '/me/share'),
 
   blogs: () => request<Blog[]>('GET', '/blogs'),
-  followBlog: (url: string) => request<Blog>('POST', '/blogs', { url }),
+  followBlog: (url: string) =>
+    request<Blog>('POST', '/blogs', { url }, DISCOVERY_TIMEOUT_MS),
   unfollowBlog: (id: string) => request<void>('DELETE', `/blogs/${encodeURIComponent(id)}`),
-  importBlogs: (urls: string[]) => request<ImportResult[]>('POST', '/blogs/batch', { urls }),
+  importBlogs: (urls: string[]) =>
+    request<ImportResult[]>('POST', '/blogs/batch', { urls }, DISCOVERY_TIMEOUT_MS),
   exportOpml: () => requestText('/blogs/export.opml'),
   updateBlog: (id: string, patch: BlogPatch) =>
     request<Blog>('PATCH', `/blogs/${encodeURIComponent(id)}`, patch),
@@ -214,7 +238,13 @@ export const api = {
 
   digestPreview: () => request<DigestPreview>('GET', '/digests/preview'),
   digestHistory: () => request<DigestRecord[]>('GET', '/digests'),
-  sendTestDigest: () => request<{ sent: boolean; postCount: number }>('POST', '/digests/test'),
+  sendTestDigest: () =>
+    request<{ sent: boolean; postCount: number }>(
+      'POST',
+      '/digests/test',
+      undefined,
+      MAIL_TIMEOUT_MS,
+    ),
 
   publicStats: () => request<PublicStats>('GET', '/stats'),
   sharedList: (id: string) =>
