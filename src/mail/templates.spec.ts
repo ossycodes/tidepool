@@ -63,6 +63,12 @@ describe('digestEmail', () => {
     expect(html).toContain('Ada · Sep 2');
   });
 
+  it('shows the logo mark from the web app next to the wordmark', () => {
+    const { html } = digestEmail(input);
+    expect(html).toContain('<img src="https://app.test/email-logo.png"');
+    expect(html).toContain('alt=""');
+  });
+
   it('includes posts and footer links in the text part', () => {
     const { text } = digestEmail(input);
     expect(text).toContain('Blog <One>\n----------');
