@@ -207,6 +207,36 @@ describe('Digests (e2e)', () => {
     );
   });
 
+  it('catches up on an issue missed while the server was down', async () => {
+    // The reader's slot was two hours ago and nothing went out.
+    const missed = localDayAndHour(
+      new Date(Date.now() - 2 * 60 * 60_000),
+      'Asia/Tokyo',
+    );
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        timezone: 'Asia/Tokyo',
+        digestFrequency: 'WEEKLY',
+        digestDay: missed.day,
+        digestHour: missed.hour,
+        lastDigestSentAt: new Date(Date.now() - 7 * 24 * 60 * 60_000),
+      },
+    });
+    expect(await app.get(DigestScheduler).enqueueDueDigests()).toContain(
+      userId,
+    );
+
+    // Once it's sent, the same slot isn't queued again.
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastDigestSentAt: new Date() },
+    });
+    expect(await app.get(DigestScheduler).enqueueDueDigests()).not.toContain(
+      userId,
+    );
+  });
+
   it('unsubscribes via the email link, with a confirm step', async () => {
     const link = /Unsubscribe: (\S+)/.exec(mailsTo().at(-1)!.text)![1];
     const path = new URL(link).pathname + new URL(link).search;

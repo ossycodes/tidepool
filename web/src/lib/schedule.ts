@@ -8,11 +8,14 @@ import type { DigestFrequency } from '@/lib/api'
 
 const HOUR_MS = 60 * 60_000
 const DAY_MS = 24 * HOUR_MS
-/** Same gaps as the API: the minimum time between two issues. */
+/**
+ * Same gaps as the API (src/digest/schedule.ts): the minimum time between two
+ * issues, kept short enough that an issue sent late doesn't delay the next.
+ */
 const MIN_GAP_MS: Record<DigestFrequency, number> = {
-  DAILY: 20 * HOUR_MS,
-  WEEKLY: 6 * DAY_MS,
-  FORTNIGHTLY: 13 * DAY_MS,
+  DAILY: 12 * HOUR_MS,
+  WEEKLY: 5 * DAY_MS,
+  FORTNIGHTLY: 12 * DAY_MS,
   MONTHLY: 20 * DAY_MS,
 }
 /** How far ahead to look: enough to cover the gap plus a full cycle. */
