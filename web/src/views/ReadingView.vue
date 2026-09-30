@@ -675,9 +675,11 @@ async function refollow(blog: Blog) {
   opacity: 0;
 }
 
-.packs-toggle:hover {
-  border-color: var(--rule-strong);
-  color: var(--ink);
+@media (hover: hover) {
+  .packs-toggle:not([aria-expanded='true']):hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
 }
 
 .packs-toggle svg {

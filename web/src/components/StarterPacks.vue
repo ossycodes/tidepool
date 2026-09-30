@@ -151,9 +151,13 @@ button.chip:active {
   border-radius: 999px;
 }
 
-.category:hover {
-  border-color: var(--rule-strong);
-  color: var(--ink);
+/* Hover only where it exists (touch keeps :hover after a tap), and never
+   over the selected look. */
+@media (hover: hover) {
+  .category:not([aria-pressed='true']):hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
 }
 
 .category[aria-pressed='true'] {
@@ -237,9 +241,11 @@ button.chip:active {
   color: var(--ink-3);
 }
 
-button.chip:hover {
-  border-color: var(--rule-strong);
-  color: var(--ink);
+@media (hover: hover) {
+  button.chip:not([aria-pressed='true']):hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
 }
 
 .chip[aria-pressed='true'] {
