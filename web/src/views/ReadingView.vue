@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ChevronDown, LayoutGrid } from '@lucide/vue'
 import { computed, nextTick, onMounted, ref, useTemplateRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AddBlogForm from '@/components/AddBlogForm.vue'
@@ -345,22 +346,43 @@ async function refollow(blog: Blog) {
       @submit="follow"
     />
 
+    <!-- Right where readers add blogs, so packs are easy to find again after the first follow. -->
+    <button
+      v-if="blogs.length"
+      type="button"
+      class="packs-toggle"
+      :aria-expanded="showPacks"
+      aria-controls="packs-panel"
+      @click="showPacks = !showPacks"
+    >
+      <LayoutGrid :size="15" aria-hidden="true" />
+      {{ showPacks ? 'Hide starter packs' : 'Browse starter packs' }}
+      <ChevronDown :size="15" class="packs-toggle__chevron" aria-hidden="true" />
+    </button>
+
+    <section
+      v-if="showPacks && blogs.length"
+      id="packs-panel"
+      class="packs-panel"
+      aria-labelledby="packs-heading"
+    >
+      <div class="packs-panel__head">
+        <h3 id="packs-heading" class="packs-panel__title">Starter packs</h3>
+        <button type="button" class="text-link" @click="showPacks = false">Close</button>
+      </div>
+      <StarterPacks
+        :busy="importing"
+        :followed="followedKeys"
+        @follow="(urls, name) => openImport(urls, name)"
+      />
+    </section>
+
     <section aria-labelledby="following-heading">
       <div class="list-head">
         <h2 id="following-heading" class="eyebrow">
           Following<span v-if="!loading && !loadError" class="tabular"> · {{ blogs.length }}</span>
         </h2>
         <div class="list-tools">
-          <button
-            v-if="blogs.length"
-            type="button"
-            class="text-link"
-            :aria-expanded="showPacks"
-            aria-controls="packs-panel"
-            @click="showPacks = !showPacks"
-          >
-            Starter packs
-          </button>
           <button type="button" class="text-link" :disabled="importing" @click="openImport()">
             Import
           </button>
@@ -379,23 +401,6 @@ async function refollow(blog: Blog) {
         @followed="onImported"
         @close="importing = false"
       />
-
-      <section
-        v-if="showPacks && blogs.length"
-        id="packs-panel"
-        class="packs-panel"
-        aria-labelledby="packs-heading"
-      >
-        <div class="packs-panel__head">
-          <h3 id="packs-heading" class="packs-panel__title">Starter packs</h3>
-          <button type="button" class="text-link" @click="showPacks = false">Close</button>
-        </div>
-        <StarterPacks
-          :busy="importing"
-          :followed="followedKeys"
-          @follow="(urls, name) => openImport(urls, name)"
-        />
-      </section>
 
       <div v-if="loading" class="skeleton-list" aria-label="Loading your blogs" role="status">
         <div v-for="n in 4" :key="n" class="skeleton-row">
@@ -621,6 +626,54 @@ async function refollow(blog: Blog) {
   display: flex;
   gap: 16px;
   font-size: 13px;
+  white-space: nowrap;
+}
+
+.packs-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  margin-top: 14px;
+  padding: 0 12px 0 14px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper-raised);
+  color: var(--ink-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition-property: background-color, border-color, color;
+  transition-duration: 150ms;
+}
+
+.packs-toggle:hover {
+  border-color: var(--rule-strong);
+  color: var(--ink);
+}
+
+.packs-toggle svg {
+  color: var(--tide);
+}
+
+.packs-toggle[aria-expanded='true'] {
+  border-color: var(--tide);
+  background: var(--tide-soft);
+  color: var(--tide);
+}
+
+.packs-toggle__chevron {
+  transition: transform 200ms var(--ease-out);
+}
+
+.packs-toggle[aria-expanded='true'] .packs-toggle__chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .packs-toggle__chevron {
+    transition: none;
+  }
 }
 
 .list-tools .text-link:disabled {
