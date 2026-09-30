@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #60 | Fix: loading placeholders get their widths from CSS; the CSP (`style-src 'self'`) blocked inline `style=""` attributes, logging errors on every reading-list visit |
+| #59 | Docs: record #57 and #58 |
 | #58 | Starter packs polish: pills keep their shape when focused, 40px touch targets on phones, press feedback, a soft panel open/close, steady follow-button width, clearer hint ([[Starter packs]]) |
 | #57 | Docs: record #56 |
 | #56 | "Browse starter packs" button under the add-blog field, so packs are easy to find after the first follow; list tools stay on one line on phones ([[Starter packs]]) |
