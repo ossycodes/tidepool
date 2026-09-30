@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #62 | Starter packs panel: the toggle is its only header and close control; a tapped topic scrolls fully into view and the phone topic row fades at its edges; picked chips stay teal after a tap (touch kept `:hover`) ([[Starter packs]]) |
+| #61 | Docs: record #59 and #60 |
 | #60 | Fix: loading placeholders get their widths from CSS; the CSP (`style-src 'self'`) blocked inline `style=""` attributes, logging errors on every reading-list visit |
 | #59 | Docs: record #57 and #58 |
 | #58 | Starter packs polish: pills keep their shape when focused, 40px touch targets on phones, press feedback, a soft panel open/close, steady follow-button width, clearer hint ([[Starter packs]]) |
