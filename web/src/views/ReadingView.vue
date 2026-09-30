@@ -365,12 +365,9 @@ async function refollow(blog: Blog) {
         v-if="showPacks && blogs.length"
         id="packs-panel"
         class="packs-panel"
-        aria-labelledby="packs-heading"
+        aria-label="Starter packs"
       >
-        <div class="packs-panel__head">
-          <h3 id="packs-heading" class="packs-panel__title">Starter packs</h3>
-          <button type="button" class="text-link" @click="showPacks = false">Close</button>
-        </div>
+        <!-- No heading or Close link: the toggle right above names and closes the panel. -->
         <StarterPacks
           :busy="importing"
           :followed="followedKeys"
@@ -723,28 +720,15 @@ async function refollow(blog: Blog) {
 }
 
 .packs-panel {
-  margin-top: 16px;
-  padding: 20px 22px 22px;
+  margin-top: 12px;
+  padding: 18px 22px 22px;
   border: 1px solid var(--rule);
   border-radius: var(--radius-lg);
   background: var(--paper-sunken);
 }
 
-.packs-panel__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 13px;
-}
-
-.packs-panel__title {
-  font: 600 20px/1.2 var(--font-serif);
-  letter-spacing: -0.01em;
-}
-
 .packs-panel :deep(.categories) {
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 @media (max-width: 560px) {
