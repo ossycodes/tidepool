@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #37 | [[Delivery frequency]]: daily, weekly, every 2 weeks or monthly, and "only send with at least N posts" |
+| #36 | Link previews: branded og.png, Open Graph tags, and shared-list previews from a small Worker ([[Deploy the web app]]) |
 | #35 | Deploy workflow pins Wrangler 4 (first automatic deploy succeeded) |
 | #34 | Automatic deploys: pushes to `main` touching `web/` deploy to usetidepool.app after type-check and tests ([[Deploy the web app]]) |
 | #33 | Sign-in form: separate input and button on phones |
