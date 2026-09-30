@@ -63,6 +63,12 @@ describe('digestEmail', () => {
     expect(html).toContain('Ada · Sep 2');
   });
 
+  it('shows the logo mark from the web app next to the wordmark', () => {
+    const { html } = digestEmail(input);
+    expect(html).toContain('<img src="https://app.test/email-logo.png"');
+    expect(html).toContain('alt=""');
+  });
+
   it('includes posts and footer links in the text part', () => {
     const { text } = digestEmail(input);
     expect(text).toContain('Blog <One>\n----------');
@@ -90,5 +96,15 @@ describe('magicLinkEmail', () => {
       'https://app.example.com/auth/callback?token=abc&amp;x=1',
     );
     expect(email.text).toContain('15 minutes');
+  });
+
+  it('loads the logo from the same web app as the link', () => {
+    const email = magicLinkEmail(
+      'https://app.example.com/auth/callback?token=abc',
+      15,
+    );
+    expect(email.html).toContain(
+      '<img src="https://app.example.com/email-logo.png"',
+    );
   });
 });

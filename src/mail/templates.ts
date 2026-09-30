@@ -77,8 +77,15 @@ export function layout(options: {
   footer?: string;
   /** Inbox preview text */
   preheader?: string;
+  /** Absolute URL of the logo mark PNG, shown before the wordmark */
+  logoUrl?: string;
 }): string {
-  const { body, label = '', footer = '', preheader = '' } = options;
+  const { body, label = '', footer = '', preheader = '', logoUrl } = options;
+  // A rounded PNG, not SVG: Gmail and Outlook block SVG images. alt is empty
+  // because the wordmark next to it already says "Tidepool".
+  const logo = logoUrl
+    ? `<img src="${escapeHtml(logoUrl)}" width="28" height="28" alt="" style="display:inline-block;width:28px;height:28px;border:0;vertical-align:middle;margin:-4px 10px 0 0;">`
+    : '';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -98,7 +105,7 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;m
       <tr><td class="tp-sheet" style="background:${COLORS.sheet};border:1px solid ${COLORS.rule};border-radius:6px;padding:32px 36px 36px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
           <tr>
-            <td class="tp-ink" style="font-family:${SERIF};font-size:24px;font-style:italic;font-weight:500;line-height:1;color:${COLORS.ink};">Tidepool</td>
+            <td class="tp-ink" style="font-family:${SERIF};font-size:24px;font-style:italic;font-weight:500;line-height:1;color:${COLORS.ink};">${logo}<span style="vertical-align:middle;">Tidepool</span></td>
             <td align="right" class="tp-ink3" style="font-family:${SANS};font-size:12px;line-height:1.4;color:${COLORS.ink3};">${escapeHtml(label)}</td>
           </tr>
           <tr><td colspan="2" class="tp-rule-strong" style="height:12px;font-size:0;line-height:0;border-bottom:3px double ${COLORS.ruleStrong};">&nbsp;</td></tr>
@@ -111,6 +118,15 @@ ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;m
 </table>
 </body>
 </html>`;
+}
+
+/** The logo PNG the web app serves (web/public/email-logo.png), next to any of its URLs. */
+function logoUrl(webAppUrl: string): string | undefined {
+  try {
+    return new URL('/email-logo.png', webAppUrl).toString();
+  } catch {
+    return undefined;
+  }
 }
 
 function footerLink(label: string, href: string): string {
@@ -232,6 +248,7 @@ export function digestEmail(input: DigestEmailInput): RenderedEmail {
     html: layout({
       label,
       preheader,
+      logoUrl: logoUrl(input.settingsUrl),
       body: `<p class="tp-ink3" style="margin:18px 0 0;font-family:${SANS};font-size:13px;line-height:1.5;color:${COLORS.ink3};">${escapeHtml(summaryLine)}</p>${sectionsHtml}`,
       footer: `${quickAddTip.html}<br><br>You're getting this because you follow these blogs on Tidepool.<br>${footerLink('Manage blogs and delivery time', input.settingsUrl)} &nbsp;·&nbsp; ${footerLink('Unsubscribe', input.unsubscribeUrl)}`,
     }),
@@ -247,6 +264,7 @@ export function magicLinkEmail(
     subject: 'Your Tidepool sign-in link',
     html: layout({
       label: 'Sign-in link',
+      logoUrl: logoUrl(link),
       preheader: `Your link works once, for the next ${ttlMinutes} minutes.`,
       body: `
         <h1 class="tp-ink" style="margin:28px 0 0;font-family:${SERIF};font-size:28px;font-weight:500;line-height:1.15;letter-spacing:-0.01em;color:${COLORS.ink};">Sign in to Tidepool</h1>
