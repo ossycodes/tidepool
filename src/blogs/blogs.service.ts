@@ -133,7 +133,12 @@ export class BlogsService {
       }
       blog = await this.prisma.blog.upsert({
         where: { sourceUrl: found.sourceUrl },
-        create: found,
+        // Discovery just looked for a feed; the next check is a week out.
+        create: {
+          ...found,
+          feedCheckedAt:
+            found.fetchMode === FetchMode.SCRAPE ? new Date() : null,
+        },
         update: {},
       });
     }
