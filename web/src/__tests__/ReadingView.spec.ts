@@ -60,7 +60,8 @@ describe('ReadingView', () => {
     expect(wrapper.text()).toContain('Nothing to read yet.')
     expect(wrapper.findAll('.pack').length).toBeGreaterThan(3)
 
-    const follow = wrapper.findAll('.pack button')[0]!
+    const follow = wrapper.findAll('.pack .btn')[0]!
+    expect(follow.text()).toBe(`Follow all ${STARTER_PACKS[0]!.blogs.length}`)
     await follow.trigger('click')
     await flushPromises()
 
@@ -68,6 +69,53 @@ describe('ReadingView', () => {
       STARTER_PACKS[0]!.blogs.map((b) => b.url).sort(),
     )
     expect(wrapper.find('.row__title').text()).toBe('Dan Luu')
+  })
+
+  it('follows only the blogs picked from a pack', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([])
+    const importBlogs = vi.spyOn(api, 'importBlogs').mockResolvedValue([])
+    const { wrapper } = await mountReading()
+
+    const pack = wrapper.findAll('.pack')[0]!
+    const [first, , third] = STARTER_PACKS[0]!.blogs
+    const chips = pack.findAll('button.chip')
+    await chips[0]!.trigger('click')
+    await chips[2]!.trigger('click')
+    expect(chips[0]!.attributes('aria-pressed')).toBe('true')
+
+    const follow = pack.find('.btn')
+    expect(follow.text()).toBe('Follow 2 selected')
+    await follow.trigger('click')
+    await flushPromises()
+
+    expect(importBlogs.mock.calls.flatMap((call) => call[0]).sort()).toEqual(
+      [first!.url, third!.url].sort(),
+    )
+  })
+
+  it('opens starter packs from a non-empty list, marking blogs already followed', async () => {
+    const [first] = STARTER_PACKS[0]!.blogs
+    vi.spyOn(api, 'blogs').mockResolvedValue([
+      blog({ id: 'b1', title: first!.name, siteUrl: `https://${first!.url}/` }),
+    ])
+    const importBlogs = vi.spyOn(api, 'importBlogs').mockResolvedValue([])
+    const { wrapper } = await mountReading()
+    expect(wrapper.find('.pack').exists()).toBe(false)
+
+    const toggle = wrapper.findAll('.list-tools button').find((b) => b.text() === 'Starter packs')!
+    await toggle.trigger('click')
+
+    const pack = wrapper.findAll('.pack')[0]!
+    expect(pack.find('.chip.is-following').text()).toContain(first!.name)
+    const others = STARTER_PACKS[0]!.blogs.slice(1)
+    const follow = pack.find('.btn')
+    expect(follow.text()).toBe(`Follow the other ${others.length}`)
+    await follow.trigger('click')
+    await flushPromises()
+
+    expect(importBlogs.mock.calls.flatMap((call) => call[0]).sort()).toEqual(
+      others.map((b) => b.url).sort(),
+    )
   })
 
   it('switches starter packs by topic', async () => {

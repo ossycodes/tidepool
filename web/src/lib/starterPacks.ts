@@ -9,6 +9,21 @@ export const PACK_CATEGORIES = [
 ] as const
 export type PackCategory = (typeof PACK_CATEGORIES)[number]
 
+/**
+ * A comparable form of a blog address: no scheme, "www.", query, fragment or
+ * trailing slash, lowercase. Lets "blog.codinghorror.com" in a pack match a
+ * followed blog whose siteUrl is "https://blog.codinghorror.com/".
+ */
+export function blogKey(url: string): string {
+  return url
+    .trim()
+    .toLowerCase()
+    .replace(/^[a-z]+:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/[?#].*$/, '')
+    .replace(/\/+$/, '')
+}
+
 export interface StarterPack {
   category: PackCategory
   name: string
