@@ -63,7 +63,7 @@ function follow(pack: StarterPack) {
       {{ name }}
     </button>
   </div>
-  <p class="hint">Tap blogs to pick just the ones you want.</p>
+  <p class="hint">Pick blogs to follow just those, or follow a whole pack.</p>
   <div class="packs">
     <article v-for="pack in packs" :key="pack.name" class="pack">
       <h4 class="pack__name">{{ pack.name }}</h4>
@@ -125,8 +125,19 @@ function follow(pack: StarterPack) {
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  transition-property: background-color, border-color, color;
+  transition-property: background-color, border-color, color, transform;
   transition-duration: 150ms;
+}
+
+.category:active,
+button.chip:active {
+  transform: scale(0.97);
+}
+
+/* The global focus ring squares corners to 6px; keep pills round. */
+.category:focus-visible,
+.chip:focus-visible {
+  border-radius: 999px;
 }
 
 .category:hover {
@@ -141,6 +152,7 @@ function follow(pack: StarterPack) {
 }
 
 .hint {
+  text-wrap: pretty;
   margin-top: 12px;
   color: var(--ink-3);
   font-size: 13px;
@@ -189,7 +201,7 @@ function follow(pack: StarterPack) {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 30px;
+  min-height: 32px;
   padding: 0 11px 0 9px;
   border: 1px solid var(--rule);
   border-radius: 999px;
@@ -200,8 +212,13 @@ function follow(pack: StarterPack) {
   line-height: 1.2;
   text-align: left;
   cursor: pointer;
-  transition-property: background-color, border-color, color;
+  transition-property: background-color, border-color, color, transform;
   transition-duration: 150ms;
+}
+
+/* The count changes as blogs are picked; keep the button from jittering. */
+.pack :deep(.btn) {
+  font-variant-numeric: tabular-nums;
 }
 
 .chip svg {
@@ -245,10 +262,21 @@ button.chip:hover {
     grid-template-columns: 1fr;
   }
 
-  /* Bigger touch targets on phones. */
+  /* Touch targets of at least 40px on phones. */
   .chip {
-    min-height: 36px;
+    min-height: 40px;
     font-size: 13.5px;
+  }
+
+  .category {
+    height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category:active,
+  button.chip:active {
+    transform: none;
   }
 }
 </style>
