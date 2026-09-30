@@ -7,7 +7,11 @@ const config = (env: Partial<Env>) =>
     get: (key: keyof Env) => ({ NODE_ENV: 'test', ...env })[key],
   }) as unknown as ConfigService<Env, true>;
 
-const telegram = { TELEGRAM_BOT_TOKEN: '123:abc', TELEGRAM_CHAT_ID: '-100' };
+const telegram = {
+  NODE_ENV: 'production' as const,
+  TELEGRAM_BOT_TOKEN: '123:abc',
+  TELEGRAM_CHAT_ID: '-100',
+};
 
 describe('AlertsService', () => {
   afterEach(() => vi.unstubAllGlobals());
@@ -18,6 +22,18 @@ describe('AlertsService', () => {
     const alerts = new AlertsService(config({}));
     expect(alerts.enabled).toBe(false);
     alerts.notify('hello');
+    expect(await alerts.send('hello')).toBe(false);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('stays silent outside production, even with a bot configured', async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const alerts = new AlertsService(
+      config({ ...telegram, NODE_ENV: 'development' }),
+    );
+    expect(alerts.enabled).toBe(false);
+    alerts.notify('⚠️ Blog failing');
     expect(await alerts.send('hello')).toBe(false);
     expect(fetch).not.toHaveBeenCalled();
   });
