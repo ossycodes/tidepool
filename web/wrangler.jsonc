@@ -3,8 +3,13 @@
 {
   "name": "tidepool",
   "compatibility_date": "2026-09-29",
+  // Only /shared/* runs the Worker (link previews for shared lists);
+  // every other path is served straight from the assets.
+  "main": "./worker/index.js",
   "assets": {
     "directory": "./dist-cloudflare",
+    "binding": "ASSETS",
+    "run_worker_first": ["/shared/*"],
     // Unknown paths get index.html, so app routes and quick add
     // (usetidepool.app/www.schneems.com) are handled by the Vue router.
     "not_found_handling": "single-page-application"
