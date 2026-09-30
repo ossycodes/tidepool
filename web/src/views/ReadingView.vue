@@ -360,22 +360,24 @@ async function refollow(blog: Blog) {
       <ChevronDown :size="15" class="packs-toggle__chevron" aria-hidden="true" />
     </button>
 
-    <section
-      v-if="showPacks && blogs.length"
-      id="packs-panel"
-      class="packs-panel"
-      aria-labelledby="packs-heading"
-    >
-      <div class="packs-panel__head">
-        <h3 id="packs-heading" class="packs-panel__title">Starter packs</h3>
-        <button type="button" class="text-link" @click="showPacks = false">Close</button>
-      </div>
-      <StarterPacks
-        :busy="importing"
-        :followed="followedKeys"
-        @follow="(urls, name) => openImport(urls, name)"
-      />
-    </section>
+    <Transition name="panel">
+      <section
+        v-if="showPacks && blogs.length"
+        id="packs-panel"
+        class="packs-panel"
+        aria-labelledby="packs-heading"
+      >
+        <div class="packs-panel__head">
+          <h3 id="packs-heading" class="packs-panel__title">Starter packs</h3>
+          <button type="button" class="text-link" @click="showPacks = false">Close</button>
+        </div>
+        <StarterPacks
+          :busy="importing"
+          :followed="followedKeys"
+          @follow="(urls, name) => openImport(urls, name)"
+        />
+      </section>
+    </Transition>
 
     <section aria-labelledby="following-heading">
       <div class="list-head">
@@ -633,7 +635,7 @@ async function refollow(blog: Blog) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
+  height: 40px;
   margin-top: 14px;
   padding: 0 12px 0 14px;
   border: 1px solid var(--rule);
@@ -643,8 +645,37 @@ async function refollow(blog: Blog) {
   font-size: 13.5px;
   font-weight: 500;
   cursor: pointer;
-  transition-property: background-color, border-color, color;
+  transition-property: background-color, border-color, color, transform;
   transition-duration: 150ms;
+}
+
+.packs-toggle:active {
+  transform: scale(0.97);
+}
+
+/* The global focus ring squares corners to 6px; keep the pill round. */
+.packs-toggle:focus-visible {
+  border-radius: 999px;
+}
+
+.panel-enter-active {
+  transition-property: opacity, transform;
+  transition-duration: 220ms;
+  transition-timing-function: var(--ease-out);
+}
+
+.panel-leave-active {
+  transition-property: opacity;
+  transition-duration: 150ms;
+}
+
+.panel-enter-from {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.panel-leave-to {
+  opacity: 0;
 }
 
 .packs-toggle:hover {
@@ -671,8 +702,14 @@ async function refollow(blog: Blog) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .packs-toggle__chevron {
+  .packs-toggle__chevron,
+  .panel-enter-active,
+  .panel-leave-active {
     transition: none;
+  }
+
+  .packs-toggle:active {
+    transform: none;
   }
 }
 
