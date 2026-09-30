@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const envSchema = z.object({
+const baseSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
@@ -12,7 +12,12 @@ export const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   JWT_TTL_DAYS: z.coerce.number().int().positive().default(30),
   MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
-  SMTP_HOST: z.string().min(1),
+  /**
+   * Mail goes through Resend's HTTPS API when this is set, otherwise over
+   * SMTP. Production needs the API: Railway blocks outbound SMTP below Pro.
+   */
+  RESEND_API_KEY: z.string().optional(),
+  SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().int().default(587),
   SMTP_SECURE: z.stringbool().default(false),
   SMTP_USER: z.string().optional(),
@@ -32,6 +37,14 @@ export const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_CHAT_ID: z.string().optional(),
 });
+
+export const envSchema = baseSchema.refine(
+  (env) => env.RESEND_API_KEY || env.SMTP_HOST,
+  {
+    message: 'Set RESEND_API_KEY or SMTP_HOST so Tidepool can send email',
+    path: ['RESEND_API_KEY'],
+  },
+);
 
 export type Env = z.infer<typeof envSchema>;
 

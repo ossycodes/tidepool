@@ -16,8 +16,8 @@ graph LR
   Redis --> Fetch["feed-fetch worker"]
   Redis --> Digest["digest worker"]
   Fetch -->|safeFetch| Blogs(("Blogs / feeds"))
-  Digest --> SMTP["SMTP (Mailpit locally)"]
-  SMTP --> Reader
+  Digest --> Mail["Resend API (SMTP/Mailpit locally)"]
+  Mail --> Reader
 ```
 
 ## Modules
@@ -29,7 +29,7 @@ graph LR
 | Blogs | `src/blogs/` | Follow/unfollow, rename, pause, recent posts |
 | Feeds | `src/feeds/` | Discovery, parsing, scraping, scheduled fetching |
 | Digest | `src/digest/` | Weekly scheduling, sending, preview, unsubscribe |
-| Mail | `src/mail/` | SMTP transport and the branded templates |
+| Mail | `src/mail/` | Resend HTTPS API in production, SMTP locally; the branded templates |
 | Stats | `src/stats/` | Public `/stats` for the `/open` page |
 | Common | `src/common/` | `safeFetch` ([[Decisions#SSRF-safe fetching]]), URL normalising, decorators |
 
