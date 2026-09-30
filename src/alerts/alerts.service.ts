@@ -44,8 +44,15 @@ export class AlertsService implements OnApplicationBootstrap {
     this.environment = config.get('NODE_ENV', { infer: true });
   }
 
+  /**
+   * Only production alerts. A developer's .env often holds the real bot
+   * token, and a local server fetching leftover test blogs would otherwise
+   * flood the chat with failures that aren't real.
+   */
   get enabled(): boolean {
-    return Boolean(this.token && this.chatId);
+    return Boolean(
+      this.token && this.chatId && this.environment === 'production',
+    );
   }
 
   onApplicationBootstrap() {
