@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AlertsService, tg } from '../alerts/alerts.service.js';
+import { UNHEALTHY_AFTER_FAILURES } from '../blogs/blog.response.js';
 import { ACCEPT_FEED, ACCEPT_HTML, HttpClient } from '../common/http-client.js';
 import type { Env } from '../config/env.js';
 import { FetchMode, type Blog } from '../generated/prisma/client.js';
@@ -29,6 +31,7 @@ export class IngestService {
     private readonly prisma: PrismaService,
     private readonly http: HttpClient,
     private readonly discovery: DiscoveryService,
+    private readonly alerts: AlertsService,
     config: ConfigService<Env, true>,
   ) {
     this.intervalMs =
@@ -88,6 +91,12 @@ export class IngestService {
         },
       });
       this.logger.warn(`${blog.sourceUrl} failed (${failures}x): ${error}`);
+      // Once, as it crosses into "Can't reach site" for its readers.
+      if (failures === UNHEALTHY_AFTER_FAILURES) {
+        this.alerts.notify(
+          `⚠️ Blog failing: <b>${tg(blog.title)}</b>\n${tg(blog.sourceUrl)}\n${failures} failed fetches in a row: ${tg(error.slice(0, 200))}`,
+        );
+      }
       return { ok: false, error };
     }
   }

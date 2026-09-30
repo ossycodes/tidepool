@@ -16,4 +16,5 @@ tags:
 - [ ] `@tidepoolapp` and `help@usetidepool.app` exist and are ours (`web/src/lib/brand.ts`)
 - [ ] Set `TRUST_PROXY` to the number of proxies in front of the API (1 behind Railway, 2 with Cloudflare in front too), so rate limits see each client's IP. Supported since the security review; see [[Security review 2026-09-30]]
 - [ ] Uptime check on `GET /health`
+- [ ] `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` set for ops alerts ([[Telegram alerts]]); the 🚀 message confirms them
 - [ ] Only one instance runs the schedulers, or accept duplicate enqueues (jobs are deduplicated)

@@ -1,6 +1,8 @@
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Express, NextFunction, Request, Response } from 'express';
+import { AlertingExceptionFilter } from './alerts/alerting-exception.filter.js';
+import { AlertsService } from './alerts/alerts.service.js';
 import type { Env } from './config/env.js';
 
 /** Shared by main.ts and the e2e tests so both run the same pipeline. */
@@ -26,6 +28,9 @@ export function configureApp(app: INestApplication) {
       forbidNonWhitelisted: true,
       transform: true,
     }),
+  );
+  app.useGlobalFilters(
+    new AlertingExceptionFilter(app.getHttpAdapter(), app.get(AlertsService)),
   );
   app.enableCors({ origin: config.get('FRONTEND_URL', { infer: true }) });
   app.enableShutdownHooks();

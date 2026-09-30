@@ -3,6 +3,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
+import { AlertsService } from '../src/alerts/alerts.service.js';
 import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { HttpClient } from '../src/common/http-client.js';
@@ -24,6 +25,21 @@ export class FakeMailService {
   }
 }
 
+/** Records ops alerts instead of sending them to Telegram. */
+export class FakeAlertsService {
+  readonly sent: string[] = [];
+  readonly enabled = true;
+
+  notify(html: string): void {
+    this.sent.push(html);
+  }
+
+  send(html: string): Promise<boolean> {
+    this.sent.push(html);
+    return Promise.resolve(true);
+  }
+}
+
 /** Serves in-memory pages instead of hitting the network. */
 export class FakeHttpClient {
   readonly pages = new Map<string, string>();
@@ -42,11 +58,14 @@ export class FakeHttpClient {
 export async function createTestApp() {
   const mail = new FakeMailService();
   const http = new FakeHttpClient();
+  const alerts = new FakeAlertsService();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(MailService)
     .useValue(mail)
     .overrideProvider(HttpClient)
     .useValue(http)
+    .overrideProvider(AlertsService)
+    .useValue(alerts)
     .compile();
 
   const app: INestApplication<App> = moduleRef.createNestApplication();
@@ -63,7 +82,7 @@ export async function createTestApp() {
     app.get(DigestProcessor).worker.close(),
     app.get(FetchProcessor).worker.close(),
   ]);
-  return { app, mail, http, moduleRef };
+  return { app, mail, http, alerts, moduleRef };
 }
 
 export function uniqueEmail(prefix = 'e2e') {
