@@ -109,6 +109,7 @@ All routes need `Authorization: Bearer <accessToken>` unless marked public.
 | GET    | `/me`                         | ✓      | Current user and digest settings                                                                                       |
 | PATCH  | `/me`                         | ✓      | `{ digestEnabled?, digestFrequency?, digestDay? (0=Sun), digestHour?, digestMinPosts?, timezone? }`                    |
 | POST   | `/me/share`                   | ✓      | Turn on your shared list; `{ reset: true }` makes a new link                                                           |
+| POST   | `/me/sign-out-everywhere`     | ✓      | End every session on every device (existing tokens get 401)                                                            |
 | DELETE | `/me/share`                   | ✓      | Turn sharing off                                                                                                       |
 | DELETE | `/me`                         | ✓      | Delete account and all subscriptions                                                                                   |
 | GET    | `/blogs`                      | ✓      | Blogs you follow, with health and latest post                                                                          |

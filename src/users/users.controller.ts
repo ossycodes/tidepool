@@ -38,6 +38,13 @@ export class UsersController {
     return this.users.unshare(user.id);
   }
 
+  /** Ends every session on every device, including this one. */
+  @Post('sign-out-everywhere')
+  @HttpCode(204)
+  async signOutEverywhere(@CurrentUser() user: AuthUser) {
+    await this.users.signOutEverywhere(user.id);
+  }
+
   @Delete()
   @HttpCode(204)
   async delete(@CurrentUser() user: AuthUser) {

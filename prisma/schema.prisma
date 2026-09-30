@@ -27,6 +27,8 @@ model User {
   lastDigestSentAt DateTime? @db.Timestamptz
   /// Random slug for the public /shared/:id page; null while sharing is off
   shareId          String?   @unique
+  /// Stamped into every access token; bumping it signs out every device
+  tokenVersion     Int       @default(0)
   createdAt        DateTime  @default(now()) @db.Timestamptz
   updatedAt        DateTime  @updatedAt @db.Timestamptz
 

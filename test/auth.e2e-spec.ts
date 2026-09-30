@@ -93,6 +93,7 @@ describe('Auth & settings (e2e)', () => {
     });
 
     await request(app.getHttpServer()).delete('/me').set(auth).expect(204);
-    await request(app.getHttpServer()).get('/me').set(auth).expect(404);
+    // A deleted account's token no longer signs anyone in.
+    await request(app.getHttpServer()).get('/me').set(auth).expect(401);
   });
 });

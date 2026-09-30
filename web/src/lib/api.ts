@@ -197,6 +197,8 @@ export const api = {
   me: () => request<User>('GET', '/me'),
   updateMe: (patch: SettingsPatch) => request<User>('PATCH', '/me', patch),
   deleteMe: () => request<void>('DELETE', '/me'),
+  /** Ends every session on every device, including this one. */
+  signOutEverywhere: () => request<void>('POST', '/me/sign-out-everywhere'),
   shareList: (reset = false) => request<User>('POST', '/me/share', { reset }),
   stopSharing: () => request<User>('DELETE', '/me/share'),
 

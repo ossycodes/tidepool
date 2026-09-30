@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #45 | Fix: the reading list's scroll-into-view broke tests (CSS.escape in jsdom) and blocked #44's deploy |
+| #44 | Just-followed blogs stay at the top of the reading list with a tag, until the next visit |
 | #43 | CSP allows Cloudflare Web Analytics (found blocked in the live check after #42) |
 | #42 | Security hardening from the OWASP review: `TRUST_PROXY`, security headers, quick add asks first, pinned CI ([[Security review 2026-09-30]]) |
 | #41 | e2e tests isolated from dev data and background jobs (flaky failures) |

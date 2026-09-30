@@ -92,6 +92,14 @@ export class UsersService {
     return { blogs };
   }
 
+  /** Bumps tokenVersion, so every access token issued so far stops working. */
+  async signOutEverywhere(userId: string): Promise<void> {
+    await this.prisma.user.updateMany({
+      where: { id: userId },
+      data: { tokenVersion: { increment: 1 } },
+    });
+  }
+
   async delete(userId: string): Promise<void> {
     await this.prisma.user.deleteMany({ where: { id: userId } });
   }
