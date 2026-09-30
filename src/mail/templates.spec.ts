@@ -91,4 +91,14 @@ describe('magicLinkEmail', () => {
     );
     expect(email.text).toContain('15 minutes');
   });
+
+  it('loads the logo from the same web app as the link', () => {
+    const email = magicLinkEmail(
+      'https://app.example.com/auth/callback?token=abc',
+      15,
+    );
+    expect(email.html).toContain(
+      '<img src="https://app.example.com/email-logo.png"',
+    );
+  });
 });
