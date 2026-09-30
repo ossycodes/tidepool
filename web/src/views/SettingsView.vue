@@ -3,6 +3,7 @@ import { Check, Copy, LogOut } from '@lucide/vue'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiKeywords from '@/components/ui/UiKeywords.vue'
 import UiSegmented from '@/components/ui/UiSegmented.vue'
 import UiSwitch from '@/components/ui/UiSwitch.vue'
 import { api, type DigestFrequency, type SettingsPatch, type User } from '@/lib/api'
@@ -134,6 +135,10 @@ const cadence = computed(
       MONTHLY: 'One email a month, at the time you choose.',
     })[digestFrequency.value],
 )
+const mutedKeywords = computed({
+  get: () => user.value?.mutedKeywords ?? [],
+  set: (mutedKeywords) => void save({ mutedKeywords }),
+})
 const timezone = computed({
   get: () => user.value?.timezone ?? 'UTC',
   set: (timezone) => void save({ timezone }),
@@ -295,6 +300,21 @@ async function deleteAccount() {
               Digests are paused. Nothing will be sent until you turn them back on.
             </template>
           </p>
+        </div>
+      </section>
+
+      <section id="filters" class="group" aria-labelledby="filters-heading">
+        <div class="group__intro">
+          <h2 id="filters-heading" class="group__title">Filters</h2>
+          <p class="group__text">Keep topics you don’t care about out of your digest.</p>
+        </div>
+        <div class="group__body">
+          <UiKeywords
+            v-model="mutedKeywords"
+            label="Mute words everywhere"
+            placeholder="e.g. crypto, sponsored, giveaway"
+            hint="Posts whose title or summary mention these are left out of every digest. To filter one blog, choose “Filter posts” from its … menu on your reading list."
+          />
         </div>
       </section>
 

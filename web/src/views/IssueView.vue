@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Eye, Send } from '@lucide/vue'
+import { Eye, Filter, Send } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { api, type DigestPreview, type DigestRecord } from '@/lib/api'
@@ -134,6 +134,14 @@ async function sendPreview() {
       <UiButton to="/reading" variant="secondary" size="sm">Go to your reading list</UiButton>
     </div>
 
+    <p v-if="!loadError && preview?.filtered" class="filtered" role="status">
+      <Filter :size="14" />
+      <span>
+        Your keyword filters left out {{ plural(preview.filtered, 'post') }}.
+        <RouterLink to="/settings#filters" class="text-link">Edit filters</RouterLink>
+      </span>
+    </p>
+
     <section v-if="history.length" class="past" aria-labelledby="past-heading">
       <h2 id="past-heading" class="eyebrow">Past issues</h2>
       <ol class="past__list">
@@ -191,6 +199,15 @@ async function sendPreview() {
 }
 
 /* The issue itself: one sheet, the same composition as the email. */
+.filtered {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--ink-3);
+  font-size: 13.5px;
+}
+
 .sheet {
   margin-top: 32px;
   padding: 28px 32px 32px;

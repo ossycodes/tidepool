@@ -11,6 +11,8 @@ const blog = (overrides: Partial<Blog> = {}): Blog => ({
   originalTitle: 'Julia Evans',
   customTitle: null,
   paused: false,
+  includeKeywords: [],
+  excludeKeywords: [],
   description: null,
   siteUrl: 'https://jvns.ca/',
   sourceUrl: 'https://jvns.ca/atom.xml',
@@ -148,6 +150,26 @@ describe('ReadingView', () => {
     expect(update).toHaveBeenCalledWith('b1', { title: 'Paul Graham' })
     expect(wrapper.find('.row__title').text()).toBe('Paul Graham')
     expect(wrapper.find('.row__host').text()).toContain('originally “Essays”')
+  })
+
+  it('filters one blog to posts about chosen words', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([blog()])
+    const update = vi
+      .spyOn(api, 'updateBlog')
+      .mockImplementation(async (_id, patch) =>
+        blog({ includeKeywords: patch.includeKeywords ?? [] }),
+      )
+    const { wrapper } = await mountReading()
+
+    await chooseFromMenu(wrapper, 'Filter posts')
+    const include = wrapper.find('.filters input')
+    await include.setValue('Rust')
+    await include.trigger('keydown', { key: 'Enter' })
+    await flushPromises()
+
+    expect(update).toHaveBeenCalledWith('b1', { includeKeywords: ['Rust'] })
+    await wrapper.findAll('button').find((b) => b.text() === 'Done')!.trigger('click')
+    expect(wrapper.find('.tag--button').text()).toContain('Filtered')
   })
 
   it('clearing the name restores the original', async () => {

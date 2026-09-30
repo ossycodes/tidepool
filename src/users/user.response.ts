@@ -9,6 +9,7 @@ export function toUserResponse(user: User) {
     digestHour: user.digestHour,
     digestFrequency: user.digestFrequency,
     digestMinPosts: user.digestMinPosts,
+    mutedKeywords: user.mutedKeywords,
     timezone: user.timezone,
     /** Slug for the public /shared/:id page; null while sharing is off */
     shareId: user.shareId,

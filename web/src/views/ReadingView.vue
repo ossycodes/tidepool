@@ -6,7 +6,7 @@ import ImportPanel from '@/components/ImportPanel.vue'
 import StarterPacks from '@/components/StarterPacks.vue'
 import BlogRow from '@/components/BlogRow.vue'
 import UiButton from '@/components/ui/UiButton.vue'
-import { ApiError, api, type Blog } from '@/lib/api'
+import { ApiError, api, type Blog, type BlogPatch } from '@/lib/api'
 import { plural, postDate, timeUntil } from '@/lib/format'
 import { quickAddPrefix } from '@/lib/quickAdd'
 import { issueTimeLabel, nextIssueAt } from '@/lib/schedule'
@@ -145,13 +145,15 @@ function replaceBlog(updated: Blog) {
 }
 
 /** Optimistic per-reader change; reverts if the API refuses. */
-async function updateBlog(blog: Blog, patch: { title?: string | null; paused?: boolean }) {
+async function updateBlog(blog: Blog, patch: BlogPatch) {
   const optimistic: Blog = { ...blog }
   if (patch.title !== undefined) {
     optimistic.customTitle = patch.title
     optimistic.title = patch.title ?? blog.originalTitle
   }
   if (patch.paused !== undefined) optimistic.paused = patch.paused
+  if (patch.includeKeywords) optimistic.includeKeywords = patch.includeKeywords
+  if (patch.excludeKeywords) optimistic.excludeKeywords = patch.excludeKeywords
   replaceBlog(optimistic)
   try {
     const saved = await api.updateBlog(blog.id, patch)
@@ -341,6 +343,7 @@ async function refollow(blog: Blog) {
           @remove="unfollow(blog)"
           @rename="(title) => rename(blog, title)"
           @pause="(paused) => setPaused(blog, paused)"
+          @filters="(filters) => updateBlog(blog, filters)"
         />
       </TransitionGroup>
     </section>

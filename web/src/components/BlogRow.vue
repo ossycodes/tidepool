@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import { ChevronDown, Eye, Pause, Pencil, Play, TriangleAlert, UserMinus } from '@lucide/vue'
+import {
+  ChevronDown,
+  Eye,
+  Filter,
+  Pause,
+  Pencil,
+  Play,
+  TriangleAlert,
+  UserMinus,
+} from '@lucide/vue'
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import BlogMonogram from '@/components/ui/BlogMonogram.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiKeywords from '@/components/ui/UiKeywords.vue'
 import UiMenu from '@/components/ui/UiMenu.vue'
 import { api, type Blog, type Post } from '@/lib/api'
 import { hostLabel, postAge } from '@/lib/format'
@@ -13,10 +23,12 @@ const emit = defineEmits<{
   /** null restores the blog's own title */
   rename: [title: string | null]
   pause: [paused: boolean]
+  filters: [filters: { includeKeywords?: string[]; excludeKeywords?: string[] }]
 }>()
 
 const menuItems = computed(() => [
   { key: 'rename', label: 'Rename', icon: Pencil },
+  { key: 'filter', label: 'Filter posts', icon: Filter },
   props.blog.paused
     ? { key: 'pause', label: 'Resume in digests', icon: Play }
     : { key: 'pause', label: 'Pause in digests', icon: Pause },
@@ -25,9 +37,31 @@ const menuItems = computed(() => [
 
 function onMenu(key: string) {
   if (key === 'rename') void startRename()
+  else if (key === 'filter') filtering.value = !filtering.value
   else if (key === 'pause') emit('pause', !props.blog.paused)
   else emit('remove')
 }
+
+const filtering = ref(false)
+const hasFilters = computed(
+  () => props.blog.includeKeywords.length > 0 || props.blog.excludeKeywords.length > 0,
+)
+const filterSummary = computed(() =>
+  [
+    props.blog.includeKeywords.length && `Only: ${props.blog.includeKeywords.join(', ')}`,
+    props.blog.excludeKeywords.length && `Leaving out: ${props.blog.excludeKeywords.join(', ')}`,
+  ]
+    .filter(Boolean)
+    .join(' · '),
+)
+const includeKeywords = computed({
+  get: () => props.blog.includeKeywords,
+  set: (includeKeywords) => emit('filters', { includeKeywords }),
+})
+const excludeKeywords = computed({
+  get: () => props.blog.excludeKeywords,
+  set: (excludeKeywords) => emit('filters', { excludeKeywords }),
+})
 
 const editing = ref(false)
 const draft = ref('')
@@ -93,6 +127,15 @@ async function toggle() {
           <a :href="blog.siteUrl" target="_blank" rel="noopener" class="row__title">{{
             blog.title
           }}</a>
+          <button
+            v-if="hasFilters && !filtering"
+            type="button"
+            class="tag tag--button"
+            :title="filterSummary"
+            @click="filtering = true"
+          >
+            <Filter :size="12" /> Filtered
+          </button>
           <span v-if="blog.paused" class="tag" title="Left out of your digests until you resume it">
             <Pause :size="12" /> Paused
           </span>
@@ -137,6 +180,27 @@ async function toggle() {
         </UiButton>
         <UiMenu :label="`More actions for ${blog.title}`" :items="menuItems" @select="onMenu" />
       </div>
+    </div>
+
+    <div v-if="filtering" class="filters">
+      <UiKeywords
+        v-model="includeKeywords"
+        label="Only include posts about"
+        placeholder="e.g. Rust, design"
+        hint="Leave empty to get every post from this blog."
+      />
+      <UiKeywords
+        v-model="excludeKeywords"
+        label="Leave out posts about"
+        placeholder="e.g. sponsored, podcast"
+      />
+      <p class="filters__note">
+        Matches whole words in the title and summary. Your reading list still shows everything;
+        filters only shape your digest.
+      </p>
+      <UiButton size="sm" variant="secondary" class="filters__done" @click="filtering = false">
+        Done
+      </UiButton>
     </div>
 
     <div :id="`posts-${blog.id}`" class="drawer" :class="{ 'is-open': open }">
@@ -281,6 +345,40 @@ a.row__latest:hover .row__latest-title {
   font-weight: 500;
   line-height: 1.6;
   white-space: nowrap;
+}
+
+.tag--button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.tag--button:hover {
+  color: var(--tide);
+}
+
+.filters {
+  display: grid;
+  gap: 16px;
+  margin: -4px 0 18px 50px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+.filters__note {
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.filters__done {
+  justify-self: end;
+}
+
+@media (max-width: 560px) {
+  .filters {
+    margin-left: 0;
+  }
 }
 
 .tag--warn {

@@ -12,6 +12,8 @@ export interface User {
   digestFrequency: DigestFrequency
   /** Hold the digest until at least this many new posts have piled up */
   digestMinPosts: number
+  /** Posts mentioning any of these are left out of every digest */
+  mutedKeywords: string[]
   timezone: string
   lastDigestSentAt: string | null
   /** Slug for the public /shared/:id page; null while sharing is off */
@@ -37,6 +39,10 @@ export interface Blog {
   customTitle: string | null
   /** Followed, but left out of this reader's digests */
   paused: boolean
+  /** If set, only posts mentioning one of these go into digests */
+  includeKeywords: string[]
+  /** Posts mentioning any of these are left out of digests */
+  excludeKeywords: string[]
   description: string | null
   siteUrl: string
   sourceUrl: string
@@ -56,6 +62,15 @@ export interface DigestSection {
 export interface DigestPreview {
   since: string
   sections: DigestSection[]
+  /** New posts left out by the reader's keyword filters */
+  filtered: number
+}
+
+export type BlogPatch = {
+  title?: string | null
+  paused?: boolean
+  includeKeywords?: string[]
+  excludeKeywords?: string[]
 }
 
 /** A blog on someone's shared reading list. */
@@ -93,7 +108,13 @@ export interface DigestRecord {
 export type SettingsPatch = Partial<
   Pick<
     User,
-    'digestEnabled' | 'digestDay' | 'digestHour' | 'digestFrequency' | 'digestMinPosts' | 'timezone'
+    | 'digestEnabled'
+    | 'digestDay'
+    | 'digestHour'
+    | 'digestFrequency'
+    | 'digestMinPosts'
+    | 'mutedKeywords'
+    | 'timezone'
   >
 >
 
@@ -184,7 +205,7 @@ export const api = {
   unfollowBlog: (id: string) => request<void>('DELETE', `/blogs/${encodeURIComponent(id)}`),
   importBlogs: (urls: string[]) => request<ImportResult[]>('POST', '/blogs/batch', { urls }),
   exportOpml: () => requestText('/blogs/export.opml'),
-  updateBlog: (id: string, patch: { title?: string | null; paused?: boolean }) =>
+  updateBlog: (id: string, patch: BlogPatch) =>
     request<Blog>('PATCH', `/blogs/${encodeURIComponent(id)}`, patch),
   blogPosts: (id: string, limit = 5) =>
     request<Post[]>('GET', `/blogs/${encodeURIComponent(id)}/posts?limit=${limit}`),

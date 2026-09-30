@@ -7,6 +7,7 @@ import type { User } from '../generated/prisma/client.js';
 import { MailService } from '../mail/mail.service.js';
 import { digestEmail } from '../mail/templates.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { keywordFilter } from './keywords.js';
 import { MIN_GAP_MS } from './schedule.js';
 
 /** Old posts that resurface in a feed (e.g. after a redesign) aren't news. */
@@ -20,6 +21,12 @@ export type SendResult = 'sent' | 'empty' | 'held' | 'skipped';
 interface UnsubscribePayload {
   sub: string;
   typ: 'unsubscribe';
+}
+
+export interface Collected {
+  sections: DigestSection[];
+  /** New posts left out by the reader's keyword filters */
+  filtered: number;
 }
 
 export interface DigestSection {
@@ -40,20 +47,35 @@ export class DigestService {
 
   /**
    * New posts discovered in (since, until], only from blogs the user followed
-   * before the post appeared, grouped by blog.
+   * before the post appeared and passing their keyword filters, grouped by
+   * blog.
    */
-  async collect(
-    userId: string,
-    since: Date,
-    until: Date,
-  ): Promise<DigestSection[]> {
+  async collect(userId: string, since: Date, until: Date): Promise<Collected> {
     // Paused blogs stay followed but are left out of the digest.
-    const subscriptions = await this.prisma.subscription.findMany({
-      where: { userId, paused: false },
-      include: { blog: { select: { id: true, title: true, siteUrl: true } } },
-    });
-    if (subscriptions.length === 0) return [];
+    const [subscriptions, user] = await Promise.all([
+      this.prisma.subscription.findMany({
+        where: { userId, paused: false },
+        include: {
+          blog: { select: { id: true, title: true, siteUrl: true } },
+        },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { mutedKeywords: true },
+      }),
+    ]);
+    if (subscriptions.length === 0) return { sections: [], filtered: 0 };
     const byBlog = new Map(subscriptions.map((s) => [s.blogId, s]));
+    const filters = new Map(
+      subscriptions.map((s) => [
+        s.blogId,
+        keywordFilter({
+          muted: user?.mutedKeywords ?? [],
+          include: s.includeKeywords,
+          exclude: s.excludeKeywords,
+        }),
+      ]),
+    );
 
     const posts = await this.prisma.post.findMany({
       where: {
@@ -70,9 +92,14 @@ export class DigestService {
     });
 
     const sections = new Map<string, DigestSection>();
+    let filtered = 0;
     for (const post of posts) {
       const subscription = byBlog.get(post.blogId)!;
       if (post.discoveredAt <= subscription.createdAt) continue;
+      if (!filters.get(post.blogId)!(post)) {
+        filtered++;
+        continue;
+      }
       let section = sections.get(post.blogId);
       if (!section) {
         section = {
@@ -86,7 +113,7 @@ export class DigestService {
       }
       section.posts.push(toPostResponse(post));
     }
-    return [...sections.values()];
+    return { sections: [...sections.values()], filtered };
   }
 
   /** What the next digest would contain right now. */
@@ -95,7 +122,7 @@ export class DigestService {
       where: { id: userId },
     });
     const since = user.lastDigestSentAt ?? user.createdAt;
-    return { since, sections: await this.collect(userId, since, new Date()) };
+    return { since, ...(await this.collect(userId, since, new Date())) };
   }
 
   async history(userId: string) {
@@ -128,7 +155,7 @@ export class DigestService {
     });
     if (claimed.count === 0) return 'skipped';
 
-    const sections = await this.collect(
+    const { sections } = await this.collect(
       userId,
       previous ?? user.createdAt,
       now,
