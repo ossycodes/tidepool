@@ -27,6 +27,11 @@ describe('security headers', () => {
     expect(csp).toContain("object-src 'none'")
   })
 
+  it('allows the Web Analytics beacon Cloudflare injects on the live site', () => {
+    expect(csp).toMatch(/script-src [^;]*https:\/\/static\.cloudflareinsights\.com/)
+    expect(csp).toMatch(/connect-src [^;]*https:\/\/cloudflareinsights\.com/)
+  })
+
   it('lets the app reach its API', () => {
     const api = /VITE_API_URL=(.+)/.exec(read('../../.env.cloudflare'))?.[1]?.trim()
     expect(api).toBeTruthy()
