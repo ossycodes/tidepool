@@ -111,7 +111,7 @@ describe('ReadingView', () => {
     expect(wrapper.find('#add-status').text()).toContain("We couldn't find any posts there")
   })
 
-  it('follows a blog passed by quick add, then clears it from the URL', async () => {
+  it('asks before following a blog passed by quick add', async () => {
     vi.spyOn(api, 'blogs').mockResolvedValue([])
     const follow = vi
       .spyOn(api, 'followBlog')
@@ -119,10 +119,29 @@ describe('ReadingView', () => {
     const { wrapper, router } = await mountReading('/?follow=www.schneems.com')
     await flushPromises()
 
-    expect(follow).toHaveBeenCalledTimes(1)
+    // Any site can link here, so nothing is followed until the reader agrees.
+    expect(follow).not.toHaveBeenCalled()
+    expect(router.currentRoute.value.query.follow).toBeUndefined()
+    expect(wrapper.find('.quick-add').text()).toContain('Follow www.schneems.com?')
+
+    await wrapper.findAll('.quick-add button').find((b) => b.text() === 'Follow')!.trigger('click')
+    await flushPromises()
+
     expect(follow).toHaveBeenCalledWith('www.schneems.com')
     expect(wrapper.find('.row__title').text()).toBe('Schneems')
-    expect(router.currentRoute.value.query.follow).toBeUndefined()
+    expect(wrapper.find('.quick-add').exists()).toBe(false)
+  })
+
+  it('can turn down a quick-add link', async () => {
+    vi.spyOn(api, 'blogs').mockResolvedValue([])
+    const follow = vi.spyOn(api, 'followBlog')
+    const { wrapper } = await mountReading('/?follow=spam.example')
+    await flushPromises()
+
+    await wrapper.findAll('.quick-add button').find((b) => b.text() === 'No thanks')!.trigger('click')
+
+    expect(follow).not.toHaveBeenCalled()
+    expect(wrapper.find('.quick-add').exists()).toBe(false)
   })
 
   async function chooseFromMenu(wrapper: Awaited<ReturnType<typeof mountReading>>['wrapper'], label: string) {

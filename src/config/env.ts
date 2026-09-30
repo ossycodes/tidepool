@@ -19,6 +19,12 @@ export const envSchema = z.object({
   SMTP_PASS: z.string().optional(),
   MAIL_FROM: z.string().min(1),
   FETCH_INTERVAL_MINUTES: z.coerce.number().int().positive().default(60),
+  /**
+   * Proxies in front of the API (load balancer, CDN). Rate limits key on the
+   * client IP, which is only right if Express knows how many hops to trust.
+   * 0 locally; e.g. 1 behind Railway, 2 behind Cloudflare + Railway.
+   */
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
 });
 
 export type Env = z.infer<typeof envSchema>;
