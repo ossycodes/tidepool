@@ -1,3 +1,4 @@
+import { normalizeKeywords } from '../digest/keywords.js';
 import {
   BadRequestException,
   HttpException,
@@ -76,12 +77,23 @@ export class BlogsService {
 
   /** Per-reader settings: a custom name, and pausing the blog in digests. */
   async update(userId: string, blogId: string, dto: UpdateBlogDto) {
-    const data: { customTitle?: string | null; paused?: boolean } = {};
+    const data: {
+      customTitle?: string | null;
+      paused?: boolean;
+      includeKeywords?: string[];
+      excludeKeywords?: string[];
+    } = {};
     if (dto.title !== undefined) {
       // Blank or null restores the blog's own title.
       data.customTitle = dto.title?.trim() || null;
     }
     if (dto.paused !== undefined) data.paused = dto.paused;
+    if (dto.includeKeywords) {
+      data.includeKeywords = normalizeKeywords(dto.includeKeywords);
+    }
+    if (dto.excludeKeywords) {
+      data.excludeKeywords = normalizeKeywords(dto.excludeKeywords);
+    }
 
     const { count } = await this.prisma.subscription.updateMany({
       where: { userId, blogId },

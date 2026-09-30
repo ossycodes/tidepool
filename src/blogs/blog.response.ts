@@ -27,6 +27,8 @@ export function toBlogResponse(
     createdAt: Date;
     customTitle: string | null;
     paused: boolean;
+    includeKeywords: string[];
+    excludeKeywords: string[];
   },
   latestPost?: Post,
 ) {
@@ -37,6 +39,8 @@ export function toBlogResponse(
     originalTitle: blog.title,
     customTitle: subscription.customTitle,
     paused: subscription.paused,
+    includeKeywords: subscription.includeKeywords,
+    excludeKeywords: subscription.excludeKeywords,
     description: blog.description,
     siteUrl: blog.siteUrl,
     sourceUrl: blog.sourceUrl,

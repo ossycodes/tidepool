@@ -13,6 +13,7 @@ const user: User = {
   digestHour: 8,
   digestFrequency: 'WEEKLY',
   digestMinPosts: 1,
+  mutedKeywords: [],
   timezone: 'Africa/Lagos',
   lastDigestSentAt: null,
   shareId: null,

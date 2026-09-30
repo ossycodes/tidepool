@@ -10,6 +10,8 @@ const blog = (id: string): Blog => ({
   originalTitle: id,
   customTitle: null,
   paused: false,
+  includeKeywords: [],
+  excludeKeywords: [],
   description: null,
   siteUrl: `https://${id}.test/`,
   sourceUrl: `https://${id}.test/feed.xml`,

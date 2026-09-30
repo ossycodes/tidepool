@@ -184,6 +184,67 @@ describe('Digests (e2e)', () => {
     });
   });
 
+  it('applies keyword filters to the digest and says how many it left out', async () => {
+    // Start a fresh issue: only posts discovered from here on count.
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastDigestSentAt: new Date() },
+    });
+    const me = await request(app.getHttpServer())
+      .patch('/me')
+      .set(auth)
+      .send({ mutedKeywords: ['crypto', ' Crypto ', ''] })
+      .expect(200);
+    expect(me.body.mutedKeywords).toEqual(['crypto']);
+    const blog = await request(app.getHttpServer())
+      .patch(`/blogs/${blogId}`)
+      .set(auth)
+      .send({ includeKeywords: ['Rust'] })
+      .expect(200);
+    expect(blog.body.includeKeywords).toEqual(['Rust']);
+    await request(app.getHttpServer())
+      .patch(`/blogs/${blogId}`)
+      .set(auth)
+      .send({ excludeKeywords: ['x'.repeat(51)] })
+      .expect(400);
+
+    http.pages.set(
+      feed,
+      rss(site, [
+        'old-1',
+        'old-2',
+        'new-1',
+        'new-2',
+        'new-3',
+        'rust-tips',
+        'go-tips',
+        'crypto-and-rust',
+      ]),
+    );
+    await app.get(IngestService).refresh(blogId);
+
+    const preview = await request(app.getHttpServer())
+      .get('/digests/preview')
+      .set(auth)
+      .expect(200);
+    const titles = preview.body.sections.flatMap(
+      (s: { posts: { title: string }[] }) => s.posts.map((p) => p.title),
+    );
+    expect(titles).toEqual(['Post rust-tips']);
+    expect(preview.body.filtered).toBe(2);
+
+    await request(app.getHttpServer())
+      .patch('/me')
+      .set(auth)
+      .send({ mutedKeywords: [] })
+      .expect(200);
+    await request(app.getHttpServer())
+      .patch(`/blogs/${blogId}`)
+      .set(auth)
+      .send({ includeKeywords: [] })
+      .expect(200);
+  });
+
   it('queues users whose local delivery hour is now', async () => {
     const { day, hour } = localDayAndHour(new Date(), 'Asia/Tokyo');
     await prisma.user.update({

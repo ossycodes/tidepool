@@ -20,10 +20,10 @@ erDiagram
 
 | Model | Notes |
 |---|---|
-| `User` | `digestFrequency` (DAILY, WEEKLY, FORTNIGHTLY, MONTHLY; default WEEKLY), `digestDay` (0 = Sunday; ignored when daily), `digestHour` (0–23), `digestMinPosts` (default 1), `timezone` (IANA), `digestEnabled`, `lastDigestSentAt` (the issue claim), `shareId` (unique slug for `/shared/:id`, null while sharing is off) |
+| `User` | `digestFrequency` (DAILY, WEEKLY, FORTNIGHTLY, MONTHLY; default WEEKLY), `digestDay` (0 = Sunday; ignored when daily), `digestHour` (0–23), `digestMinPosts` (default 1), `mutedKeywords` (text[]), `timezone` (IANA), `digestEnabled`, `lastDigestSentAt` (the issue claim), `shareId` (unique slug for `/shared/:id`, null while sharing is off) |
 | `LoginToken` | Keyed by **email**, stores only a SHA-256 hash; a `User` is created on first verify |
 | `Blog` | Shared by all readers. `sourceUrl` (feed or page) is unique; `fetchMode` is `FEED` or `SCRAPE`; fetch health in `consecutiveFailures`, `lastError`, `nextFetchAt` |
-| `Subscription` | One reader following one blog. `customTitle` (their own name) and `paused` (left out of their digests) — see [[Rename and pause blogs]] |
+| `Subscription` | One reader following one blog. `customTitle` (their own name) and `paused` (left out of their digests), see [[Rename and pause blogs]]; `includeKeywords` / `excludeKeywords` (text[], per-blog digest filters), see [[Keyword filters]] |
 | `Post` | Unique on `(blogId, url)`. `backfill = true` for posts that existed at first fetch; they are never emailed |
 | `Digest` / `DigestItem` | What was sent, when, and which posts |
 

@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { latestPostFirst } from '../blogs/blog.response.js';
+import { normalizeKeywords } from '../digest/keywords.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { UpdateSettingsDto } from './dto.js';
 import { toUserResponse, type UserResponse } from './user.response.js';
@@ -19,6 +20,9 @@ export class UsersService {
     userId: string,
     dto: UpdateSettingsDto,
   ): Promise<UserResponse> {
+    if (dto.mutedKeywords) {
+      dto.mutedKeywords = normalizeKeywords(dto.mutedKeywords);
+    }
     const { count } = await this.prisma.user.updateMany({
       where: { id: userId },
       data: dto,

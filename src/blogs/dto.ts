@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { MAX_KEYWORD_LENGTH, MAX_KEYWORDS } from '../digest/keywords.js';
 import {
   ArrayMaxSize,
   ArrayMinSize,
@@ -22,6 +23,22 @@ export class AddBlogDto {
 }
 
 export class UpdateBlogDto {
+  /** Only this blog's posts mentioning one of these go into digests */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_KEYWORDS)
+  @IsString({ each: true })
+  @MaxLength(MAX_KEYWORD_LENGTH, { each: true })
+  includeKeywords?: string[];
+
+  /** This blog's posts mentioning any of these are left out of digests */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_KEYWORDS)
+  @IsString({ each: true })
+  @MaxLength(MAX_KEYWORD_LENGTH, { each: true })
+  excludeKeywords?: string[];
+
   /** Your own name for the blog; null or "" restores the original */
   @IsOptional()
   @IsString()

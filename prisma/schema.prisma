@@ -20,6 +20,8 @@ model User {
   digestFrequency  DigestFrequency @default(WEEKLY)
   /// Hold the digest until at least this many new posts have piled up
   digestMinPosts   Int       @default(1)
+  /// Posts mentioning any of these are left out of every digest
+  mutedKeywords    String[]  @default([])
   /// IANA timezone name, e.g. "Europe/London"
   timezone         String    @default("UTC")
   lastDigestSentAt DateTime? @db.Timestamptz
@@ -92,6 +94,10 @@ model Subscription {
   customTitle String?
   /// Still followed and fetched, but left out of this reader's digests
   paused      Boolean  @default(false)
+  /// If set, only this blog's posts mentioning one of these go in digests
+  includeKeywords String[] @default([])
+  /// This blog's posts mentioning any of these are left out of digests
+  excludeKeywords String[] @default([])
   createdAt   DateTime @default(now()) @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

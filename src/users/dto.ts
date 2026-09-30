@@ -1,11 +1,16 @@
+import { MAX_KEYWORD_LENGTH, MAX_KEYWORDS } from '../digest/keywords.js';
 import { DigestFrequency } from '../generated/prisma/client.js';
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
   IsOptional,
   IsTimeZone,
+  IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -41,6 +46,14 @@ export class UpdateSettingsDto {
   @Min(1)
   @Max(50)
   digestMinPosts?: number;
+
+  /** Posts mentioning any of these are left out of every digest. */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_KEYWORDS)
+  @IsString({ each: true })
+  @MaxLength(MAX_KEYWORD_LENGTH, { each: true })
+  mutedKeywords?: string[];
 }
 
 export class ShareDto {

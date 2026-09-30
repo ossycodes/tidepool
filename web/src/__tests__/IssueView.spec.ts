@@ -14,6 +14,7 @@ const user: User = {
   digestHour: 8,
   digestFrequency: 'WEEKLY',
   digestMinPosts: 1,
+  mutedKeywords: [],
   timezone: 'UTC',
   lastDigestSentAt: null,
   shareId: null,
@@ -22,6 +23,7 @@ const user: User = {
 
 const preview: DigestPreview = {
   since: '2025-09-01T00:00:00Z',
+  filtered: 0,
   sections: [
     {
       blog: { id: 'b1', title: 'Julia Evans', siteUrl: 'https://jvns.ca/' },
@@ -76,8 +78,15 @@ describe('IssueView', () => {
     expect(wrapper.find('.past__list').text()).toContain('No. 1')
   })
 
+  it('says how many posts the keyword filters left out', async () => {
+    vi.spyOn(api, 'digestPreview').mockResolvedValue({ ...preview, filtered: 3 })
+    vi.spyOn(api, 'digestHistory').mockResolvedValue([])
+    const wrapper = await mountIssue()
+    expect(wrapper.find('.filtered').text()).toContain('Your keyword filters left out 3 posts.')
+  })
+
   it('shows an empty state and disables the preview button', async () => {
-    vi.spyOn(api, 'digestPreview').mockResolvedValue({ since: preview.since, sections: [] })
+    vi.spyOn(api, 'digestPreview').mockResolvedValue({ since: preview.since, sections: [], filtered: 0 })
     vi.spyOn(api, 'digestHistory').mockResolvedValue([])
     const wrapper = await mountIssue()
 
