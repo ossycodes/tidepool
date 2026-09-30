@@ -82,8 +82,12 @@ router.beforeEach((to) => {
   if (to.meta.guestOnly && authed) return { name: 'reading' }
 })
 
+// Browsers show this in history and address-bar suggestions, so the home
+// page says what Tidepool does, not just its name.
+export const HOME_TITLE = 'Tidepool: every blog you follow, in one email'
+
 router.afterEach((to) => {
-  document.title = to.meta.title ? `${to.meta.title} · Tidepool` : 'Tidepool'
+  document.title = to.meta.title ? `${to.meta.title} · Tidepool` : HOME_TITLE
 })
 
 onSessionExpired(() => {
