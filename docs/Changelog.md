@@ -10,6 +10,7 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #41 | e2e tests isolated from dev data and background jobs (flaky failures) |
 | #40 | [[Re-check scraped blogs for feeds]]: scraped blogs switch to a feed once one appears (or merge into it) |
 | #39 | [[Keyword filters]]: mute words everywhere, and only-include / leave-out words per blog |
 | #38 | [[Digest catch-up window]]: missed issues go out late (up to a day) instead of being skipped |

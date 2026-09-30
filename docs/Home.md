@@ -34,6 +34,7 @@ A competitor to [Tentacle](https://usetentacle.app/).
 - [[Deploy checklist]]: what must be true before launch
 - [[Changelog]]: every PR, newest first
 - [[Decisions]]: why things are the way they are
+- [[Security review 2026-09-30]]: OWASP review, findings and what's still open
 
 ## Research
 

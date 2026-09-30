@@ -62,16 +62,35 @@ const route = useRoute()
 const router = useRouter()
 const quickAddExample = `${quickAddPrefix()}jvns.ca`
 
+/**
+ * Arrived via quick add (tidepool.example/some-blog.com). Any site can link
+ * here, so ask before following instead of adding the blog silently.
+ */
+const quickAdd = ref<string | null>(null)
+const quickAddLabel = computed(() =>
+  quickAdd.value?.replace(/^https?:\/\//i, '').replace(/\/+$/, ''),
+)
+
 onMounted(async () => {
   await load()
-  // Arrived via quick add (tidepool.example/some-blog.com): follow it now.
   const pending = typeof route.query.follow === 'string' ? route.query.follow : null
   if (!pending) return
-  await router.replace({ query: {} }) // so a refresh doesn't add it again
+  await router.replace({ query: {} }) // so a refresh doesn't ask again
   if (loadError.value) return
   url.value = pending
-  await follow(pending)
+  quickAdd.value = pending
 })
+
+async function confirmQuickAdd() {
+  const pending = quickAdd.value
+  quickAdd.value = null
+  if (pending) await follow(pending)
+}
+
+function dismissQuickAdd() {
+  quickAdd.value = null
+  url.value = ''
+}
 
 function followErrorMessage(err: unknown): string {
   if (!(err instanceof ApiError)) return 'Something went wrong. Please try again.'
@@ -271,6 +290,17 @@ async function refollow(blog: Blog) {
     </header>
     <div class="double-rule" />
 
+    <div v-if="quickAdd" class="quick-add" role="alertdialog" aria-labelledby="quick-add-title">
+      <p id="quick-add-title" class="quick-add__title">
+        Follow <strong>{{ quickAddLabel }}</strong>?
+      </p>
+      <p class="quick-add__text">You opened a quick-add link. New posts will go into your digest.</p>
+      <div class="quick-add__actions">
+        <UiButton size="sm" @click="confirmQuickAdd">Follow</UiButton>
+        <UiButton size="sm" variant="ghost" @click="dismissQuickAdd">No thanks</UiButton>
+      </div>
+    </div>
+
     <AddBlogForm
       v-model="url"
       class="reading__add"
@@ -416,6 +446,36 @@ async function refollow(blog: Blog) {
 
 .reading__add {
   margin-top: 32px;
+}
+
+.quick-add {
+  display: grid;
+  gap: 4px;
+  margin-top: 28px;
+  padding: 16px 18px;
+  border: 1px solid color-mix(in oklab, var(--tide) 35%, var(--rule));
+  border-radius: var(--radius);
+  background: var(--tide-soft);
+}
+
+.quick-add__title {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.quick-add__text {
+  color: var(--ink-2);
+  font-size: 13.5px;
+}
+
+.quick-add__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.quick-add + .reading__add {
+  margin-top: 16px;
 }
 
 .list-head {

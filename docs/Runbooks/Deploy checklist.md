@@ -14,6 +14,6 @@ tags:
 - [x] Static host serves `index.html` for every unknown path, **including dotted
       ones** like `/www.schneems.com` ([[SPA fallback for quick add]], [[Deploy the web app]])
 - [ ] `@tidepoolapp` and `help@usetidepool.app` exist and are ours (`web/src/lib/brand.ts`)
-- [ ] Trust the proxy for rate limiting (`app.set('trust proxy', 1)`) if behind a load balancer
+- [ ] Set `TRUST_PROXY` to the number of proxies in front of the API (1 behind Railway, 2 with Cloudflare in front too), so rate limits see each client's IP. Supported since the security review; see [[Security review 2026-09-30]]
 - [ ] Uptime check on `GET /health`
 - [ ] Only one instance runs the schedulers, or accept duplicate enqueues (jobs are deduplicated)

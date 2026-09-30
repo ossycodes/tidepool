@@ -15,6 +15,12 @@ concurrency:
   group: deploy-web
   cancel-in-progress: false
 
+# The job only reads the repo; Cloudflare access comes from its own token.
+permissions:
+  contents: read
+
+# Actions are pinned to commit SHAs (tags can be moved); the comment says
+# which release each SHA is.
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -22,9 +28,9 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
@@ -36,7 +42,7 @@ jobs:
       - run: npm run build:cloudflare
 
       - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
         with:
           # The action defaults to Wrangler 3, which can't deploy an
           # assets-only Worker; match the version we deploy with locally.
