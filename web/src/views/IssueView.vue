@@ -69,9 +69,12 @@ async function sendPreview() {
     <header class="masthead">
       <div>
         <p class="eyebrow">
-          Next issue<span v-if="!loading" class="tabular"> · No. {{ issueNumber }}</span>
+          Next issue<span v-if="!loading && !loadError" class="tabular">
+            · No. {{ issueNumber }}</span
+          >
         </p>
-        <h1 class="masthead__title">{{ issueDay ?? (user ? 'Paused' : ' ') }}</h1>
+        <!-- Without an account loaded there's no date to show; skip the empty title. -->
+        <h1 v-if="user" class="masthead__title">{{ issueDay ?? 'Paused' }}</h1>
         <p v-if="nextIssue && user" class="masthead__when">
           {{ hourLabel(user.digestHour) }} · <span>{{ timeUntil(nextIssue) }}</span>
         </p>
