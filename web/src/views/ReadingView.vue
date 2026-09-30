@@ -408,9 +408,9 @@ async function refollow(blog: Blog) {
         <div v-for="n in 4" :key="n" class="skeleton-row">
           <span class="skeleton skeleton--square" />
           <span class="skeleton-lines">
-            <span class="skeleton" style="width: 34%" />
-            <span class="skeleton" style="width: 18%" />
-            <span class="skeleton" style="width: 62%" />
+            <span class="skeleton" />
+            <span class="skeleton" />
+            <span class="skeleton" />
           </span>
         </div>
       </div>
@@ -778,6 +778,20 @@ async function refollow(blog: Blog) {
   flex: 1;
   gap: 9px;
   padding-top: 3px;
+}
+
+/* Widths live here, not in style="" attributes: the CSP (style-src 'self')
+   blocks inline style attributes, which left every bar the same width. */
+.skeleton-lines .skeleton:nth-child(1) {
+  width: 34%;
+}
+
+.skeleton-lines .skeleton:nth-child(2) {
+  width: 18%;
+}
+
+.skeleton-lines .skeleton:nth-child(3) {
+  width: 62%;
 }
 
 .skeleton {
