@@ -102,8 +102,11 @@ describe('ReadingView', () => {
     const { wrapper } = await mountReading()
     expect(wrapper.find('.pack').exists()).toBe(false)
 
-    const toggle = wrapper.findAll('.list-tools button').find((b) => b.text() === 'Starter packs')!
+    const toggle = wrapper.find('.packs-toggle')
+    expect(toggle.text()).toBe('Browse starter packs')
     await toggle.trigger('click')
+    expect(toggle.attributes('aria-expanded')).toBe('true')
+    expect(toggle.text()).toBe('Hide starter packs')
 
     const pack = wrapper.findAll('.pack')[0]!
     expect(pack.find('.chip.is-following').text()).toContain(first!.name)
