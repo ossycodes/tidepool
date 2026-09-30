@@ -97,6 +97,31 @@ describe('ReadingView', () => {
     expect((wrapper.find('input[aria-label="Blog address"]').element as HTMLInputElement).value).toBe('')
   })
 
+  it('puts a new follow at the top even when its latest post is old', async () => {
+    const recent = (id: string, title: string, day: string) =>
+      blog({
+        id,
+        title,
+        latestPost: { ...blog().latestPost!, id: `p-${id}`, publishedAt: day, discoveredAt: day },
+      })
+    vi.spyOn(api, 'blogs').mockResolvedValue([
+      recent('b2', 'Fresh One', '2025-09-20T00:00:00Z'),
+      recent('b3', 'Fresh Two', '2025-09-19T00:00:00Z'),
+    ])
+    vi.spyOn(api, 'followBlog').mockResolvedValue(
+      recent('b9', 'Quiet Blog', '2025-07-01T00:00:00Z'),
+    )
+    const { wrapper } = await mountReading()
+
+    await wrapper.find('input[aria-label="Blog address"]').setValue('quiet.example')
+    await wrapper.find('form').trigger('submit')
+    await flushPromises()
+
+    const titles = wrapper.findAll('.row__title').map((t) => t.text())
+    expect(titles).toEqual(['Quiet Blog', 'Fresh One', 'Fresh Two'])
+    expect(wrapper.find('.row').text()).toContain('Just followed')
+  })
+
   it('explains when a page has no posts', async () => {
     vi.spyOn(api, 'blogs').mockResolvedValue([blog()])
     vi.spyOn(api, 'followBlog').mockRejectedValue(

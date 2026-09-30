@@ -17,7 +17,12 @@ import UiMenu from '@/components/ui/UiMenu.vue'
 import { api, type Blog, type Post } from '@/lib/api'
 import { hostLabel, postAge } from '@/lib/format'
 
-const props = defineProps<{ blog: Blog; highlighted?: boolean }>()
+const props = defineProps<{
+  blog: Blog
+  highlighted?: boolean
+  /** Followed during this visit (shown at the top of the list) */
+  justFollowed?: boolean
+}>()
 const emit = defineEmits<{
   remove: []
   /** null restores the blog's own title */
@@ -104,7 +109,11 @@ async function toggle() {
 </script>
 
 <template>
-  <li class="row" :class="{ 'is-highlighted': highlighted, 'is-paused': blog.paused }">
+  <li
+    class="row"
+    :class="{ 'is-highlighted': highlighted, 'is-paused': blog.paused }"
+    :data-blog-id="blog.id"
+  >
     <div class="row__main">
       <BlogMonogram :name="blog.title" />
       <div class="row__body">
@@ -127,6 +136,13 @@ async function toggle() {
           <a :href="blog.siteUrl" target="_blank" rel="noopener" class="row__title">{{
             blog.title
           }}</a>
+          <span
+            v-if="justFollowed"
+            class="tag tag--new"
+            title="Followed just now. It moves into its usual place next visit."
+          >
+            Just followed
+          </span>
           <button
             v-if="hasFilters && !filtering"
             type="button"
@@ -345,6 +361,12 @@ a.row__latest:hover .row__latest-title {
   font-weight: 500;
   line-height: 1.6;
   white-space: nowrap;
+}
+
+.tag--new {
+  border-color: color-mix(in oklab, var(--tide) 35%, var(--rule));
+  background: var(--tide-soft);
+  color: var(--tide);
 }
 
 .tag--button {

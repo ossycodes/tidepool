@@ -33,9 +33,29 @@ const today = new Date().toLocaleDateString('en-US', {
   day: 'numeric',
 })
 
-// Freshest first; blogs with nothing found yet sink to the bottom.
+/**
+ * Blogs followed during this visit, newest first. They sit at the top until
+ * the next visit, so a new follow never vanishes into the middle of the list
+ * just because its latest post is old.
+ */
+const justFollowed = ref<string[]>([])
+
+function markFollowed(ids: string[]) {
+  if (!ids.length) return
+  justFollowed.value = [...ids, ...justFollowed.value.filter((id) => !ids.includes(id))]
+}
+
+// Just followed first, then freshest posts; blogs with nothing found yet sink
+// to the bottom.
 const sortedBlogs = computed(() =>
   [...blogs.value].sort((a, b) => {
+    const ra = justFollowed.value.indexOf(a.id)
+    const rb = justFollowed.value.indexOf(b.id)
+    if (ra !== -1 || rb !== -1) {
+      if (ra === -1) return 1
+      if (rb === -1) return -1
+      return ra - rb
+    }
     // Paused blogs sit below the ones that make it into the digest.
     if (a.paused !== b.paused) return a.paused ? 1 : -1
     const at = a.latestPost ? Date.parse(postDate(a.latestPost)) : 0
@@ -106,6 +126,12 @@ function followErrorMessage(err: unknown): string {
 
 function flash(id: string) {
   highlightId.value = id
+  // Make sure the highlighted row is on screen, e.g. on a long list.
+  void nextTick(() =>
+    document
+      .querySelector(`[data-blog-id="${CSS.escape(id)}"]`)
+      ?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }),
+  )
   setTimeout(() => {
     if (highlightId.value === id) highlightId.value = null
   }, 2400)
@@ -127,6 +153,7 @@ async function follow(raw: string) {
       toast(`You already follow ${blog.title}`)
     } else {
       blogs.value = [blog, ...blogs.value]
+      markFollowed([blog.id])
       toast(
         blog.fetchMode === 'SCRAPE'
           ? `Following ${blog.title}. It has no feed, so we'll watch the page.`
@@ -217,6 +244,7 @@ function onImported(newBlogs: Blog[]) {
   const known = new Set(blogs.value.map((b) => b.id))
   const added = newBlogs.filter((b) => !known.has(b.id))
   if (added.length) blogs.value = [...added, ...blogs.value]
+  markFollowed(added.map((b) => b.id))
 }
 
 async function exportOpml() {
@@ -370,6 +398,7 @@ async function refollow(blog: Blog) {
           :key="blog.id"
           :blog="blog"
           :highlighted="blog.id === highlightId"
+          :just-followed="justFollowed.includes(blog.id)"
           @remove="unfollow(blog)"
           @rename="(title) => rename(blog, title)"
           @pause="(paused) => setPaused(blog, paused)"
