@@ -12,6 +12,7 @@ import { quickAddPrefix } from '@/lib/quickAdd'
 import { issueTimeLabel, nextIssueAt } from '@/lib/schedule'
 import { session, setUser } from '@/lib/session'
 import { copyText, shareUrl } from '@/lib/share'
+import { blogKey } from '@/lib/starterPacks'
 import { toast } from '@/lib/toast'
 
 const blogs = ref<Blog[]>([])
@@ -231,6 +232,12 @@ async function setPaused(blog: Blog, paused: boolean) {
 }
 
 const importing = ref(false)
+// Starter packs stay reachable after the first follow, with blogs already
+// followed marked so a pack can be topped up.
+const showPacks = ref(false)
+const followedKeys = computed(() =>
+  blogs.value.flatMap((b) => [blogKey(b.siteUrl), blogKey(b.sourceUrl)]),
+)
 const importPanel = useTemplateRef<InstanceType<typeof ImportPanel>>('importPanel')
 
 /** Opens the import panel; with urls (a starter pack) it starts right away. */
@@ -344,6 +351,16 @@ async function refollow(blog: Blog) {
           Following<span v-if="!loading && !loadError" class="tabular"> · {{ blogs.length }}</span>
         </h2>
         <div class="list-tools">
+          <button
+            v-if="blogs.length"
+            type="button"
+            class="text-link"
+            :aria-expanded="showPacks"
+            aria-controls="packs-panel"
+            @click="showPacks = !showPacks"
+          >
+            Starter packs
+          </button>
           <button type="button" class="text-link" :disabled="importing" @click="openImport()">
             Import
           </button>
@@ -362,6 +379,23 @@ async function refollow(blog: Blog) {
         @followed="onImported"
         @close="importing = false"
       />
+
+      <section
+        v-if="showPacks && blogs.length"
+        id="packs-panel"
+        class="packs-panel"
+        aria-labelledby="packs-heading"
+      >
+        <div class="packs-panel__head">
+          <h3 id="packs-heading" class="packs-panel__title">Starter packs</h3>
+          <button type="button" class="text-link" @click="showPacks = false">Close</button>
+        </div>
+        <StarterPacks
+          :busy="importing"
+          :followed="followedKeys"
+          @follow="(urls, name) => openImport(urls, name)"
+        />
+      </section>
 
       <div v-if="loading" class="skeleton-list" aria-label="Loading your blogs" role="status">
         <div v-for="n in 4" :key="n" class="skeleton-row">
@@ -596,6 +630,37 @@ async function refollow(blog: Blog) {
 
 .empty__import {
   margin-top: 16px;
+}
+
+.packs-panel {
+  margin-top: 16px;
+  padding: 20px 22px 22px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--paper-sunken);
+}
+
+.packs-panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.packs-panel__title {
+  font: 600 20px/1.2 var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+.packs-panel :deep(.categories) {
+  margin-top: 14px;
+}
+
+@media (max-width: 560px) {
+  .packs-panel {
+    padding: 18px 16px 18px;
+  }
 }
 
 .notice {
