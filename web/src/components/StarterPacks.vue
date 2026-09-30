@@ -28,6 +28,17 @@ const isFollowed = (url: string) => followedKeys.value.has(blogKey(url))
 const isPicked = (pack: StarterPack, url: string) => picked[pack.name]?.includes(url) ?? false
 const remaining = (pack: StarterPack) => pack.blogs.filter((b) => !isFollowed(b.url))
 
+// On phones the topics are one scrolling row; bring the picked one fully into view.
+function pickCategory(name: PackCategory, event: MouseEvent) {
+  category.value = name
+  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  ;(event.currentTarget as HTMLElement).scrollIntoView?.({
+    behavior: reduceMotion ? 'auto' : 'smooth',
+    block: 'nearest',
+    inline: 'nearest',
+  })
+}
+
 function toggle(pack: StarterPack, url: string) {
   const current = picked[pack.name] ?? []
   picked[pack.name] = current.includes(url) ? current.filter((u) => u !== url) : [...current, url]
@@ -58,7 +69,7 @@ function follow(pack: StarterPack) {
       type="button"
       class="category"
       :aria-pressed="name === category"
-      @click="category = name"
+      @click="pickCategory(name, $event)"
     >
       {{ name }}
     </button>
@@ -140,9 +151,13 @@ button.chip:active {
   border-radius: 999px;
 }
 
-.category:hover {
-  border-color: var(--rule-strong);
-  color: var(--ink);
+/* Hover only where it exists (touch keeps :hover after a tap), and never
+   over the selected look. */
+@media (hover: hover) {
+  .category:not([aria-pressed='true']):hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
 }
 
 .category[aria-pressed='true'] {
@@ -226,9 +241,11 @@ button.chip:active {
   color: var(--ink-3);
 }
 
-button.chip:hover {
-  border-color: var(--rule-strong);
-  color: var(--ink);
+@media (hover: hover) {
+  button.chip:not([aria-pressed='true']):hover {
+    border-color: var(--rule-strong);
+    color: var(--ink);
+  }
 }
 
 .chip[aria-pressed='true'] {
@@ -256,6 +273,16 @@ button.chip:hover {
     padding: 2px 16px;
     overflow-x: auto;
     scrollbar-width: none;
+    scroll-padding-inline: 16px;
+    /* Soft edges hint that the row scrolls; the first and last pills sit
+       inside the 16px padding, so at rest nothing readable is faded. */
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 14px,
+      #000 calc(100% - 28px),
+      transparent 100%
+    );
   }
 
   .packs {
