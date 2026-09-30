@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #48 | Telegram ops alerts: new readers, new blogs, failing blogs, failed digests, 5xx errors, API started ([[Telegram alerts]]) |
+| #47 | API requests time out (15 s; longer for discovery and email) instead of loading forever |
 | #46 | Sign out everywhere: tokens carry `tokenVersion`, checked by the guard; deleted accounts' tokens get 401 ([[Security review 2026-09-30]]) |
 | #45 | Fix: the reading list's scroll-into-view broke tests (CSS.escape in jsdom) and blocked #44's deploy |
 | #44 | Just-followed blogs stay at the top of the reading list with a tag, until the next visit |

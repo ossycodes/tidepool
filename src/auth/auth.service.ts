@@ -3,6 +3,7 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { AlertsService, maskEmail, tg } from '../alerts/alerts.service.js';
 import type { Env } from '../config/env.js';
 import { MailService } from '../mail/mail.service.js';
 import { magicLinkEmail } from '../mail/templates.js';
@@ -33,6 +34,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly mail: MailService,
     private readonly config: ConfigService<Env, true>,
+    private readonly alerts: AlertsService,
   ) {}
 
   /** Always resolves the same way whether or not the email has an account. */
@@ -94,11 +96,19 @@ export class AuthService {
     });
     if (claimed.count === 0) throw invalid;
 
+    const isNew =
+      (await this.prisma.user.count({ where: { email: record.email } })) === 0;
     const user = await this.prisma.user.upsert({
       where: { email: record.email },
       create: { email: record.email, ...(timezone && { timezone }) },
       update: {},
     });
+    if (isNew) {
+      const readers = await this.prisma.user.count();
+      this.alerts.notify(
+        `👋 New reader: ${tg(maskEmail(user.email))} (${tg(user.timezone)}), ${readers} in total`,
+      );
+    }
 
     const payload: AccessTokenPayload = {
       sub: user.id,

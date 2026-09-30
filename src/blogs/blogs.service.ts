@@ -6,6 +6,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import { AlertsService, tg } from '../alerts/alerts.service.js';
 import { normalizeUrl } from '../common/url.js';
 import { FetchMode } from '../generated/prisma/client.js';
 import { escapeHtml } from '../mail/templates.js';
@@ -43,6 +44,7 @@ export class BlogsService {
     private readonly prisma: PrismaService,
     private readonly discovery: DiscoveryService,
     private readonly ingest: IngestService,
+    private readonly alerts: AlertsService,
   ) {}
 
   async list(userId: string) {
@@ -131,6 +133,9 @@ export class BlogsService {
         }
         throw err;
       }
+      const known = await this.prisma.blog.count({
+        where: { sourceUrl: found.sourceUrl },
+      });
       blog = await this.prisma.blog.upsert({
         where: { sourceUrl: found.sourceUrl },
         // Discovery just looked for a feed; the next check is a week out.
@@ -141,6 +146,13 @@ export class BlogsService {
         },
         update: {},
       });
+      if (!known) {
+        const how =
+          blog.fetchMode === FetchMode.FEED ? 'has a feed' : 'watching page';
+        this.alerts.notify(
+          `📰 New blog: <b>${tg(blog.title)}</b>\n${tg(blog.siteUrl)} (${how})`,
+        );
+      }
     }
 
     // Establish the baseline so existing posts don't land in the next digest.

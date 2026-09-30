@@ -25,6 +25,12 @@ export const envSchema = z.object({
    * 0 locally; e.g. 1 behind Railway, 2 behind Cloudflare + Railway.
    */
   TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
+  /**
+   * Ops alerts to a Telegram chat (new readers, new blogs, errors). Both
+   * are optional; without them alerts are skipped.
+   */
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_CHAT_ID: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,7 +1,8 @@
 import type { Blog, Post } from '../generated/prisma/client.js';
 
 /** Failures before a blog is reported as unhealthy to the user. */
-const UNHEALTHY_AFTER_FAILURES = 3;
+/** Failed fetches in a row before a blog shows "Can't reach site". */
+export const UNHEALTHY_AFTER_FAILURES = 3;
 
 /** Prisma orderBy for newest posts first; scraped posts have no publishedAt. */
 export const latestPostFirst = [

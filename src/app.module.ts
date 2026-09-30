@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { AlertsModule } from './alerts/alerts.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { BlogsModule } from './blogs/blogs.module.js';
 import { HttpClientModule } from './common/http-client.js';
@@ -27,6 +28,7 @@ import { UsersModule } from './users/users.module.js';
       }),
     }),
     PrismaModule,
+    AlertsModule,
     HttpClientModule,
     MailModule,
     AuthModule,
