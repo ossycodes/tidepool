@@ -10,6 +10,7 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #56 | "Browse starter packs" button under the add-blog field, so packs are easy to find after the first follow; list tools stay on one line on phones ([[Starter packs]]) |
 | #54 | Starter packs: pick individual blogs from a pack, and open packs anytime from the reading list, with blogs you follow marked ([[Starter packs]]) |
 | #53 | Fix: ops alerts send from production only; a local server with the bot token was alerting on leftover test blogs ([[Telegram alerts]]) |
 | #52 | Home page title says what Tidepool does ("Tidepool: every blog you follow, in one email"), for browser suggestions and history |
