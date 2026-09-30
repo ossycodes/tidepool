@@ -1,8 +1,10 @@
 ---
-status: in-progress
+status: shipped
 type: feature
 area: digest
 priority: 2
+pr: 39
+shipped: 2026-09-30
 tags:
   - feature
 ---

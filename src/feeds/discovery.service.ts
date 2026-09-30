@@ -132,6 +132,20 @@ export class DiscoveryService {
     };
   }
 
+  /**
+   * A feed for a page we already have: advertised links first, then the
+   * usual feed addresses. Used to re-check blogs we follow by scraping.
+   */
+  async findFeed(
+    html: string,
+    pageUrl: string,
+  ): Promise<{ url: string; feed: ParsedFeed } | null> {
+    return (
+      (await this.firstFeed(findFeedLinks(html, pageUrl))) ??
+      (await this.guessFeed(pageUrl))
+    );
+  }
+
   /** Advertised feeds, tried in page order. */
   private async firstFeed(candidates: string[]) {
     for (const candidate of candidates.slice(0, 5)) {

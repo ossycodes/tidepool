@@ -10,6 +10,7 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #39 | [[Keyword filters]]: mute words everywhere, and only-include / leave-out words per blog |
 | #38 | [[Digest catch-up window]]: missed issues go out late (up to a day) instead of being skipped |
 | #37 | [[Delivery frequency]]: daily, weekly, every 2 weeks or monthly, and "only send with at least N posts" |
 | #36 | Link previews: branded og.png, Open Graph tags, and shared-list previews from a small Worker ([[Deploy the web app]]) |
