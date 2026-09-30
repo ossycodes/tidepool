@@ -8,6 +8,8 @@ tags:
 
 The API can post ops alerts to a Telegram chat. It's optional: without both variables, alerts are skipped. The code is in `src/alerts/`.
 
+Alerts only send when `NODE_ENV=production` (#53). Keeping the bot token in a local `.env` is safe: a local server stays silent even when its fetch job fails on leftover test blogs.
+
 ## What you get
 
 | Alert | When |
