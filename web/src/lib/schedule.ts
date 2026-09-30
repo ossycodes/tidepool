@@ -4,12 +4,30 @@
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-const MIN_GAP_MS = 6 * 24 * 60 * 60_000
+import type { DigestFrequency } from '@/lib/api'
+
+const HOUR_MS = 60 * 60_000
+const DAY_MS = 24 * HOUR_MS
+/** Same gaps as the API: the minimum time between two issues. */
+const MIN_GAP_MS: Record<DigestFrequency, number> = {
+  DAILY: 20 * HOUR_MS,
+  WEEKLY: 6 * DAY_MS,
+  FORTNIGHTLY: 13 * DAY_MS,
+  MONTHLY: 20 * DAY_MS,
+}
+/** How far ahead to look: enough to cover the gap plus a full cycle. */
+const HORIZON_DAYS: Record<DigestFrequency, number> = {
+  DAILY: 3,
+  WEEKLY: 14,
+  FORTNIGHTLY: 21,
+  MONTHLY: 70,
+}
 const STEP_MS = 15 * 60_000
 const formatters = new Map<string, Intl.DateTimeFormat>()
 
 export interface DeliverySchedule {
   digestEnabled: boolean
+  digestFrequency: DigestFrequency
   digestDay: number
   digestHour: number
   timezone: string
@@ -22,6 +40,7 @@ function formatterFor(timeZone: string): Intl.DateTimeFormat {
     formatter = new Intl.DateTimeFormat('en-US', {
       timeZone,
       weekday: 'short',
+      day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
       hourCycle: 'h23',
@@ -36,6 +55,8 @@ export function localParts(date: Date, timeZone: string) {
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
   return {
     day: WEEKDAYS.indexOf(get('weekday')),
+    /** Day of the month */
+    date: Number(get('day')),
     hour: Number(get('hour')),
     minute: Number(get('minute')),
   }
@@ -44,19 +65,21 @@ export function localParts(date: Date, timeZone: string) {
 /** The next moment the scheduler will pick this user up, or null if paused. */
 export function nextIssueAt(user: DeliverySchedule, now = new Date()): Date | null {
   if (!user.digestEnabled) return null
+  const frequency = user.digestFrequency ?? 'WEEKLY'
   const earliest = user.lastDigestSentAt
-    ? new Date(user.lastDigestSentAt).getTime() + MIN_GAP_MS
+    ? new Date(user.lastDigestSentAt).getTime() + MIN_GAP_MS[frequency]
     : 0
   const timeZone = isValidTimeZone(user.timezone) ? user.timezone : 'UTC'
 
-  let t = Math.ceil(now.getTime() / STEP_MS) * STEP_MS
-  // Two weeks of quarter hours covers every offset and the six-day gap.
-  for (let i = 0; i < 14 * 24 * 4; i++, t += STEP_MS) {
-    if (t < earliest) continue
+  // Quarter hours, so zones with :30 and :45 offsets land on the hour too.
+  let t = Math.ceil(Math.max(now.getTime(), earliest) / STEP_MS) * STEP_MS
+  const steps = (HORIZON_DAYS[frequency] * DAY_MS) / STEP_MS
+  for (let i = 0; i < steps; i++, t += STEP_MS) {
     const local = localParts(new Date(t), timeZone)
-    if (local.day === user.digestDay && local.hour === user.digestHour && local.minute === 0) {
-      return new Date(t)
-    }
+    if (local.hour !== user.digestHour || local.minute !== 0) continue
+    if (frequency !== 'DAILY' && local.day !== user.digestDay) continue
+    if (frequency === 'MONTHLY' && local.date > 7) continue
+    return new Date(t)
   }
   return null
 }

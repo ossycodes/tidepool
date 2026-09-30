@@ -11,6 +11,8 @@ const user: User = {
   digestEnabled: true,
   digestDay: 1,
   digestHour: 8,
+  digestFrequency: 'WEEKLY',
+  digestMinPosts: 1,
   timezone: 'Africa/Lagos',
   lastDigestSentAt: null,
   shareId: null,
@@ -51,6 +53,36 @@ describe('SettingsView', () => {
     expect(session.state.user?.digestDay).toBe(5)
     expect(wrapper.find('[role="radio"][title="Friday"]').attributes('aria-checked')).toBe('true')
     expect(wrapper.text()).toContain('Saved')
+  })
+
+  it('changes how often digests arrive, hiding the day for daily', async () => {
+    const update = vi
+      .spyOn(api, 'updateMe')
+      .mockImplementation(async (patch) => ({ ...user, ...patch }))
+    const { wrapper } = await mountSettings()
+    expect(wrapper.find('[aria-label="Delivery day"]').exists()).toBe(true)
+
+    const daily = wrapper.findAll('[role="radio"]').find((b) => b.text() === 'Daily')!
+    await daily.trigger('click')
+    await flushPromises()
+
+    expect(update).toHaveBeenCalledWith({ digestFrequency: 'DAILY' })
+    expect(wrapper.find('[aria-label="Delivery day"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('One email a day')
+  })
+
+  it('holds quiet issues until enough posts arrive', async () => {
+    const update = vi
+      .spyOn(api, 'updateMe')
+      .mockImplementation(async (patch) => ({ ...user, ...patch }))
+    const { wrapper } = await mountSettings()
+
+    const select = wrapper.findAll('select').find((s) => s.text().includes('Any new post'))!
+    await select.setValue('5')
+    await flushPromises()
+
+    expect(update).toHaveBeenCalledWith({ digestMinPosts: 5 })
+    expect(wrapper.find('.summary').text()).toContain('if there are at least 5 new posts')
   })
 
   it('pauses digests with the switch', async () => {

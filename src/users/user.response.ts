@@ -7,6 +7,8 @@ export function toUserResponse(user: User) {
     digestEnabled: user.digestEnabled,
     digestDay: user.digestDay,
     digestHour: user.digestHour,
+    digestFrequency: user.digestFrequency,
+    digestMinPosts: user.digestMinPosts,
     timezone: user.timezone,
     /** Slug for the public /shared/:id page; null while sharing is off */
     shareId: user.shareId,

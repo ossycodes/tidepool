@@ -131,6 +131,59 @@ describe('Digests (e2e)', () => {
     expect(mailsTo()).toHaveLength(before);
   });
 
+  it('holds the issue until the minimum number of posts, then sends them all', async () => {
+    const settings = await request(app.getHttpServer())
+      .patch('/me')
+      .set(auth)
+      .send({ digestFrequency: 'DAILY', digestMinPosts: 2 })
+      .expect(200);
+    expect(settings.body).toMatchObject({
+      digestFrequency: 'DAILY',
+      digestMinPosts: 2,
+    });
+    await request(app.getHttpServer())
+      .patch('/me')
+      .set(auth)
+      .send({ digestFrequency: 'HOURLY' })
+      .expect(400);
+    await request(app.getHttpServer())
+      .patch('/me')
+      .set(auth)
+      .send({ digestMinPosts: 0 })
+      .expect(400);
+
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60_000);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastDigestSentAt: twoDaysAgo },
+    });
+    const before = mailsTo().length;
+
+    // One new post: below the minimum, so nothing goes out and the window stays open.
+    http.pages.set(feed, rss(site, ['old-1', 'old-2', 'new-1', 'new-2']));
+    await app.get(IngestService).refresh(blogId);
+    expect(await digests.send(userId)).toBe('held');
+    expect(mailsTo()).toHaveLength(before);
+    const held = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    expect(held.lastDigestSentAt).toEqual(twoDaysAgo);
+
+    // A second post meets the minimum; both arrive together.
+    http.pages.set(
+      feed,
+      rss(site, ['old-1', 'old-2', 'new-1', 'new-2', 'new-3']),
+    );
+    await app.get(IngestService).refresh(blogId);
+    expect(await digests.send(userId)).toBe('sent');
+    const message = mailsTo().at(-1)!;
+    expect(message.text).toContain(`${site}posts/new-2`);
+    expect(message.text).toContain(`${site}posts/new-3`);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { digestFrequency: 'WEEKLY', digestMinPosts: 1 },
+    });
+  });
+
   it('queues users whose local delivery hour is now', async () => {
     const { day, hour } = localDayAndHour(new Date(), 'Asia/Tokyo');
     await prisma.user.update({

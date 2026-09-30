@@ -1,5 +1,7 @@
 const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '')
 
+export type DigestFrequency = 'DAILY' | 'WEEKLY' | 'FORTNIGHTLY' | 'MONTHLY'
+
 export interface User {
   id: string
   email: string
@@ -7,6 +9,9 @@ export interface User {
   /** 0 = Sunday ... 6 = Saturday */
   digestDay: number
   digestHour: number
+  digestFrequency: DigestFrequency
+  /** Hold the digest until at least this many new posts have piled up */
+  digestMinPosts: number
   timezone: string
   lastDigestSentAt: string | null
   /** Slug for the public /shared/:id page; null while sharing is off */
@@ -86,7 +91,10 @@ export interface DigestRecord {
 }
 
 export type SettingsPatch = Partial<
-  Pick<User, 'digestEnabled' | 'digestDay' | 'digestHour' | 'timezone'>
+  Pick<
+    User,
+    'digestEnabled' | 'digestDay' | 'digestHour' | 'digestFrequency' | 'digestMinPosts' | 'timezone'
+  >
 >
 
 export type ImportResult =

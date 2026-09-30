@@ -4,7 +4,7 @@ import { Cron } from '@nestjs/schedule';
 import type { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { DIGEST_QUEUE, type DigestJob } from './constants.js';
-import { isDigestDue, MIN_DIGEST_GAP_MS } from './schedule.js';
+import { isDigestDue, SHORTEST_GAP_MS } from './schedule.js';
 
 const BATCH_SIZE = 500;
 
@@ -19,7 +19,8 @@ export class DigestScheduler {
   @Cron('*/15 * * * *')
   async enqueueDueDigests(): Promise<string[]> {
     const now = new Date();
-    const cutoff = new Date(now.getTime() - MIN_DIGEST_GAP_MS);
+    // Exact per-frequency gaps are checked by isDigestDue below.
+    const cutoff = new Date(now.getTime() - SHORTEST_GAP_MS);
     const day = now.toISOString().slice(0, 10);
     const queued: string[] = [];
 
@@ -36,6 +37,7 @@ export class DigestScheduler {
         },
         select: {
           id: true,
+          digestFrequency: true,
           digestDay: true,
           digestHour: true,
           timezone: true,

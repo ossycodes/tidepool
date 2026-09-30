@@ -7,14 +7,15 @@ import type { User } from '../generated/prisma/client.js';
 import { MailService } from '../mail/mail.service.js';
 import { digestEmail } from '../mail/templates.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { MIN_DIGEST_GAP_MS } from './schedule.js';
+import { MIN_GAP_MS } from './schedule.js';
 
 /** Old posts that resurface in a feed (e.g. after a redesign) aren't news. */
 const STALE_POST_MS = 30 * 24 * 60 * 60_000;
 const MAX_POSTS = 200;
 const UNSUBSCRIBE_TOKEN_TTL_SECONDS = 10 * 365 * 24 * 60 * 60;
 
-export type SendResult = 'sent' | 'empty' | 'skipped';
+/** 'held': fewer new posts than the reader's minimum, so they roll over. */
+export type SendResult = 'sent' | 'empty' | 'held' | 'skipped';
 
 interface UnsubscribePayload {
   sub: string;
@@ -106,18 +107,21 @@ export class DigestService {
     });
   }
 
-  /** Sends this week's digest. Safe to call concurrently and to retry. */
+  /** Sends the reader's next issue. Safe to call concurrently and to retry. */
   async send(userId: string): Promise<SendResult> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.digestEnabled) return 'skipped';
 
     const now = new Date();
     const previous = user.lastDigestSentAt;
-    if (previous && now.getTime() - previous.getTime() < MIN_DIGEST_GAP_MS) {
+    if (
+      previous &&
+      now.getTime() - previous.getTime() < MIN_GAP_MS[user.digestFrequency]
+    ) {
       return 'skipped';
     }
 
-    // Claim the week with a compare-and-set so two workers can't both send.
+    // Claim this issue with a compare-and-set so two workers can't both send.
     const claimed = await this.prisma.user.updateMany({
       where: { id: userId, lastDigestSentAt: previous },
       data: { lastDigestSentAt: now },
@@ -130,6 +134,17 @@ export class DigestService {
       now,
     );
     if (sections.length === 0) return 'empty';
+
+    // Too few posts for this reader: give the claim back so the posts roll
+    // into the next issue instead of being skipped.
+    const postCount = sections.reduce((n, s) => n + s.posts.length, 0);
+    if (postCount < user.digestMinPosts) {
+      await this.prisma.user.updateMany({
+        where: { id: userId, lastDigestSentAt: now },
+        data: { lastDigestSentAt: previous },
+      });
+      return 'held';
+    }
 
     try {
       await this.deliver(user, sections, {
