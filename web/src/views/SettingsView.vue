@@ -173,6 +173,23 @@ function signOutNow() {
   void router.push({ name: 'home' })
 }
 
+const signingOutEverywhere = ref(false)
+
+/** Ends every session (other phones, laptops, this browser), then goes home. */
+async function signOutEverywhereNow() {
+  signingOutEverywhere.value = true
+  try {
+    await api.signOutEverywhere()
+    signOut()
+    await router.push({ name: 'home' })
+    toast('Signed out on every device.')
+  } catch (err) {
+    toast(err instanceof Error ? err.message : 'Couldn’t sign out everywhere.', { tone: 'error' })
+  } finally {
+    signingOutEverywhere.value = false
+  }
+}
+
 const confirmingDelete = ref(false)
 const deleting = ref(false)
 
@@ -394,6 +411,22 @@ async function deleteAccount() {
             </div>
             <UiButton variant="secondary" size="sm" @click="signOutNow">
               <LogOut :size="14" /> Sign out
+            </UiButton>
+          </div>
+          <div class="field field--inline">
+            <div>
+              <p class="field__label">Signed in somewhere else?</p>
+              <p class="field__hint">
+                Ends every session, on your phone, other computers and this browser.
+              </p>
+            </div>
+            <UiButton
+              variant="secondary"
+              size="sm"
+              :loading="signingOutEverywhere"
+              @click="signOutEverywhereNow"
+            >
+              Sign out everywhere
             </UiButton>
           </div>
         </div>

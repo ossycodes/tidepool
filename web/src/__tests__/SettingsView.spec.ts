@@ -122,6 +122,21 @@ describe('SettingsView', () => {
     expect(session.state.user?.digestHour).toBe(8)
   })
 
+  it('signs out everywhere, then leaves this browser signed out too', async () => {
+    const everywhere = vi.spyOn(api, 'signOutEverywhere').mockResolvedValue(undefined)
+    const { wrapper, router } = await mountSettings()
+
+    await wrapper
+      .findAll('button')
+      .find((b) => b.text() === 'Sign out everywhere')!
+      .trigger('click')
+    await flushPromises()
+
+    expect(everywhere).toHaveBeenCalledTimes(1)
+    expect(session.isAuthenticated.value).toBe(false)
+    expect(router.currentRoute.value.name).toBe('home')
+  })
+
   it('deletes the account only after confirming', async () => {
     const remove = vi.spyOn(api, 'deleteMe').mockResolvedValue(undefined)
     const { wrapper, router } = await mountSettings()

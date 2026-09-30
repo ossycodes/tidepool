@@ -16,6 +16,8 @@ const LINK_WINDOW_MS = 15 * 60_000;
 export interface AccessTokenPayload {
   sub: string;
   typ: 'access';
+  /** User.tokenVersion at sign-in; tokens from before it existed count as 0 */
+  ver?: number;
 }
 
 export function hashToken(token: string): string {
@@ -98,7 +100,11 @@ export class AuthService {
       update: {},
     });
 
-    const payload: AccessTokenPayload = { sub: user.id, typ: 'access' };
+    const payload: AccessTokenPayload = {
+      sub: user.id,
+      typ: 'access',
+      ver: user.tokenVersion,
+    };
     const accessToken = await this.jwt.signAsync(payload);
     return { accessToken, user: toUserResponse(user) };
   }

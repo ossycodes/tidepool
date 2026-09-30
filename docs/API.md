@@ -18,6 +18,7 @@ Validation errors are `400`; missing or not-yours is `404`; discovery failures a
 | POST | `/auth/verify` | public | `{ token, timezone? }` → `{ accessToken, user }` |
 | GET / PATCH / DELETE | `/me` | ✓ | Settings: `digestEnabled`, `digestFrequency` (`DAILY`/`WEEKLY`/`FORTNIGHTLY`/`MONTHLY`), `digestDay`, `digestHour`, `digestMinPosts` (1–50), `mutedKeywords` (up to 20, ≤50 chars each), `timezone`; `shareId` (read-only) |
 | POST | `/me/share` | ✓ | Turn on the shared list (keeps an existing link); `{ reset: true }` issues a new link |
+| POST | `/me/sign-out-everywhere` | ✓ | 204; bumps `tokenVersion`, so every access token issued so far gets 401 |
 | DELETE | `/me/share` | ✓ | Turn sharing off; the link 404s |
 | GET | `/blogs` | ✓ | Followed blogs with health, latest post, `customTitle`, `paused` |
 | POST | `/blogs` | ✓ | `{ url }` → follow (homepage or feed URL; RSS optional) |

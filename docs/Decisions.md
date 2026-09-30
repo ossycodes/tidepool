@@ -79,3 +79,11 @@ that by advertising the protocol we really speak (`ALPNProtocols:
 ['http/1.1']`), not by pretending to be a browser: the User-Agent stays
 `TidepoolBot`, so a site that wants to block us by name still can, and we
 respect it. Sites that block everything get a plain explanation.
+
+## Sessions are revocable JWTs
+Access tokens stay stateless JWTs (30 days), but each carries the user's
+`tokenVersion`, and the auth guard compares it on every request. "Sign out
+everywhere" bumps the version, which ends every session at once, and a
+deleted account's token fails the lookup. The cost is one primary-key read per
+authenticated request; that's cheap at our size and far simpler than a
+session table. Plain "Sign out" still only forgets the token in that browser.
