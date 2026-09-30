@@ -10,6 +10,12 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #35 | Deploy workflow pins Wrangler 4 (first automatic deploy succeeded) |
+| #34 | Automatic deploys: pushes to `main` touching `web/` deploy to usetidepool.app after type-check and tests ([[Deploy the web app]]) |
+| #33 | Sign-in form: separate input and button on phones |
+| #32 | Support address is `help@usetidepool.app` (forwarded by Cloudflare Email Routing) |
+| #31 | Web app live on Cloudflare at usetidepool.app ([[Deploy the web app]], [[SPA fallback for quick add]]) |
+| #30 | Docs: #28 and #29 recorded |
 | #29 | Bot-check pages get a clear message instead of "no posts found" ([[Blogs Tentacle can follow and we can't]]) |
 | #28 | Docs: #26 and #27 recorded; findings on three blogs Tentacle lists |
 | #27 | [[Starter packs]]: 46 packs, 204 blogs (restored after #25, plus a Tentacle reader's list) |
