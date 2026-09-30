@@ -87,3 +87,10 @@ everywhere" bumps the version, which ends every session at once, and a
 deleted account's token fails the lookup. The cost is one primary-key read per
 authenticated request; that's cheap at our size and far simpler than a
 session table. Plain "Sign out" still only forgets the token in that browser.
+
+## Mail goes through Resend's HTTPS API
+Railway blocks outbound SMTP below the Pro plan, which we found when every
+sign-in request hung and returned 500 in production. With `RESEND_API_KEY`
+set, `MailService` posts to Resend's API instead; SMTP (Mailpit) stays for
+local development so nothing needs an account to run. The production key is
+send-only, and both paths give up after 15 s so a slow provider fails fast.

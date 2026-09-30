@@ -10,6 +10,7 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #49 | Fix: production mail goes through Resend's HTTPS API (Railway blocks SMTP below Pro), so sign-in links send; sending times out after 15 s ([[Decisions#Mail goes through Resend's HTTPS API]]) |
 | #48 | Telegram ops alerts: new readers, new blogs, failing blogs, failed digests, 5xx errors, API started ([[Telegram alerts]]) |
 | #47 | API requests time out (15 s; longer for discovery and email) instead of loading forever |
 | #46 | Sign out everywhere: tokens carry `tokenVersion`, checked by the guard; deleted accounts' tokens get 401 ([[Security review 2026-09-30]]) |
