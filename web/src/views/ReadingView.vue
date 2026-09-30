@@ -128,8 +128,8 @@ function flash(id: string) {
   highlightId.value = id
   // Make sure the highlighted row is on screen, e.g. on a long list.
   void nextTick(() =>
-    document
-      .querySelector(`[data-blog-id="${CSS.escape(id)}"]`)
+    [...document.querySelectorAll<HTMLElement>('[data-blog-id]')]
+      .find((row) => row.dataset.blogId === id)
       ?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' }),
   )
   setTimeout(() => {
