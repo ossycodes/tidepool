@@ -121,7 +121,7 @@ const maxFollowers = computed(() => Math.max(1, ...(stats.value?.topBlogs.map((b
 
       <div v-else class="tiles tiles--loading" role="status" aria-label="Loading the numbers">
         <div v-for="n in 6" :key="n" class="tile">
-          <span class="skeleton" style="width: 50%" />
+          <span class="skeleton skeleton--label" />
           <span class="skeleton skeleton--big" />
         </div>
       </div>
@@ -326,6 +326,11 @@ const maxFollowers = computed(() => Math.max(1, ...(stats.value?.topBlogs.map((b
   height: 10px;
   border-radius: 999px;
   background: var(--paper-sunken);
+}
+
+/* A class, not style="width: 50%": the CSP blocks inline style attributes. */
+.skeleton--label {
+  width: 50%;
 }
 
 .skeleton--big {
