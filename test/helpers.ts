@@ -1,4 +1,5 @@
 import type { INestApplication } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -6,6 +7,8 @@ import { AppModule } from '../src/app.module.js';
 import { configureApp } from '../src/app.setup.js';
 import { HttpClient } from '../src/common/http-client.js';
 import { FetchError, type FetchResult } from '../src/common/safe-fetch.js';
+import { DigestProcessor } from '../src/digest/digest.processor.js';
+import { FetchProcessor } from '../src/feeds/fetch.processor.js';
 import { MailService, type MailMessage } from '../src/mail/mail.service.js';
 
 export class FakeMailService {
@@ -49,6 +52,17 @@ export async function createTestApp() {
   const app: INestApplication<App> = moduleRef.createNestApplication();
   configureApp(app);
   await app.init();
+
+  // Tests call the schedulers and services directly. Background crons and
+  // queue workers would race them, and each other across test files that
+  // run in parallel, so every test app switches them off.
+  for (const job of app.get(SchedulerRegistry).getCronJobs().values()) {
+    void job.stop();
+  }
+  await Promise.all([
+    app.get(DigestProcessor).worker.close(),
+    app.get(FetchProcessor).worker.close(),
+  ]);
   return { app, mail, http, moduleRef };
 }
 
