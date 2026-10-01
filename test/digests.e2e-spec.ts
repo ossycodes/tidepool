@@ -259,9 +259,16 @@ describe('Digests (e2e)', () => {
     const queued = await app.get(DigestScheduler).enqueueDueDigests();
     expect(queued).toContain(userId);
 
+    // The next hour from a real timestamp: at 23:xx in Tokyo, `(hour + 1) % 24`
+    // on the same day meant 00:00 earlier that day, a missed slot the
+    // catch-up rightly queues, so this failed for an hour every day.
+    const next = localDayAndHour(
+      new Date(Date.now() + 60 * 60_000),
+      'Asia/Tokyo',
+    );
     await prisma.user.update({
       where: { id: userId },
-      data: { digestHour: (hour + 1) % 24 },
+      data: { digestDay: next.day, digestHour: next.hour },
     });
     expect(await app.get(DigestScheduler).enqueueDueDigests()).not.toContain(
       userId,
