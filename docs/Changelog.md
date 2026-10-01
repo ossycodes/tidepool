@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #64 | Fix: the digest scheduling e2e test failed daily from 23:00 Tokyo time (`(hour + 1) % 24` kept the same weekday); the next hour now comes from a real timestamp |
+| #63 | Docs: record #61 and #62 |
 | #62 | Starter packs panel: the toggle is its only header and close control; a tapped topic scrolls fully into view and the phone topic row fades at its edges; picked chips stay teal after a tap (touch kept `:hover`) ([[Starter packs]]) |
 | #61 | Docs: record #59 and #60 |
 | #60 | Fix: loading placeholders get their widths from CSS; the CSP (`style-src 'self'`) blocked inline `style=""` attributes, logging errors on every reading-list visit |
