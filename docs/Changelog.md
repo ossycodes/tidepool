@@ -10,6 +10,8 @@ All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub sk
 
 | PR | Change |
 |---|---|
+| #66 | Fix: feeds whose items carry a structured author (blog.google's `<author><name>…`) failed to parse entirely; the author's name is now read from it, so the Google Ads & Commerce blog can be followed |
+| #65 | Docs: record #63 and #64 |
 | #64 | Fix: the digest scheduling e2e test failed daily from 23:00 Tokyo time (`(hour + 1) % 24` kept the same weekday); the next hour now comes from a real timestamp |
 | #63 | Docs: record #61 and #62 |
 | #62 | Starter packs panel: the toggle is its only header and close control; a tapped topic scrolls fully into view and the phone topic row fades at its edges; picked chips stay teal after a tap (touch kept `:hover`) ([[Starter packs]]) |
