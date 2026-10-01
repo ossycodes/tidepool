@@ -273,6 +273,34 @@ describe('extractArticleLinks', () => {
     ]);
   });
 
+  it('takes the heading inside a card link as the title (issafrica.org)', () => {
+    const card = (slug: string, heading: string) => `
+      <a class="card" href="/iss-today/${slug}">
+        <img src="/banner.jpg" alt="...">
+        <div class="card-date">30 Sep 2026 / by Ronak Gopaldas &amp; Priyal Singh</div>
+        <h6 class="card-subtitle">${heading}</h6>
+        <p class="card-text">A short summary of ${slug}.</p>
+      </a>`;
+    const html = `<html><body>
+      <nav><a href="/events">Events</a><a href="/research">Research</a></nav>
+      ${card('us-sa-rift', 'US-South Africa rift: separating the optics from the substance')}
+      ${card('police-reset', 'South Africa’s police reset depends on 140 station commanders')}
+      ${card('fake-news', 'SA local elections will test voters’ ability to spot fake news')}
+    </body></html>`;
+
+    const posts = extractArticleLinks(html, 'https://issafrica.org/iss-today');
+    expect(posts.map((p) => p.url)).toEqual([
+      'https://issafrica.org/iss-today/us-sa-rift',
+      'https://issafrica.org/iss-today/police-reset',
+      'https://issafrica.org/iss-today/fake-news',
+    ]);
+    expect(posts[0]).toEqual({
+      url: 'https://issafrica.org/iss-today/us-sa-rift',
+      title: 'US-South Africa rift: separating the optics from the substance',
+      summary: 'A short summary of us-sa-rift.',
+    });
+  });
+
   it('falls back to all same-site links when there are no headings', () => {
     const posts = extractArticleLinks(
       `<ul><li><a href="/notes/one">Note one</a></li><li><a href="/notes/two">Note two</a></li></ul>`,
