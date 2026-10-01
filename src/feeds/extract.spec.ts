@@ -164,6 +164,21 @@ describe('parseFeed', () => {
     });
   });
 
+  it('reads structured authors inside RSS items (blog.google)', async () => {
+    const rss = `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0"><channel><title>Ads &amp; Commerce</title><link>https://blog.google/</link>
+<item><title>Plain author</title><link>https://blog.google/a</link></item>
+<item><title>Structured author</title><link>https://blog.google/b</link>
+  <author xmlns:author="http://www.w3.org/2005/Atom"><name>Ashish Gupta</name><title>VP/GM</title><department>Merchant Shopping</department></author>
+</item></channel></rss>`;
+    const feed = await parseFeed(rss, 'xml', 'https://blog.google/rss/');
+    expect(feed.posts).toHaveLength(2);
+    expect(feed.posts[1]).toMatchObject({
+      title: 'Structured author',
+      author: 'Ashish Gupta',
+    });
+  });
+
   it('parses Atom', async () => {
     const feed = await parseFeed(ATOM, 'xml', 'https://atom.example/atom.xml');
     expect(feed.title).toBe('Atom Blog');

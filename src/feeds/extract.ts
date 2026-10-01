@@ -276,7 +276,23 @@ export function extractArticleLinks(
   return collect('a[href]').slice(0, MAX_POSTS);
 }
 
-function clean(text: string | undefined, max: number): string | undefined {
+/**
+ * Feed fields are usually strings, but not always: blog.google puts a
+ * structured Atom author inside RSS items (`<author><name>…</name><title>…`),
+ * which the parser hands back as an object. Take the name (or text) from it.
+ */
+function textOf(value: unknown): string | undefined {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return textOf(value[0]);
+  if (value && typeof value === 'object') {
+    const fields = value as Record<string, unknown>;
+    return textOf(fields.name ?? fields._ ?? fields['#text']);
+  }
+  return undefined;
+}
+
+function clean(value: unknown, max: number): string | undefined {
+  const text = textOf(value);
   if (!text) return undefined;
   const collapsed = text.replace(/\s+/g, ' ').trim();
   if (!collapsed) return undefined;
