@@ -254,19 +254,32 @@ export function extractArticleLinks(
       if (NON_ARTICLE_PATH.test(url.pathname) || ASSET_PATH.test(url.pathname))
         return;
 
+      // A link wrapping a whole card (date, byline, heading, blurb) would make
+      // all of that the title; the heading inside it is the real one, and a
+      // paragraph next to it is the summary.
+      const heading = anchor.find('h1, h2, h3, h4, h5, h6').first();
       const title =
-        clean(anchor.text(), 300) ?? clean(anchor.attr('title'), 300);
+        (heading.length ? clean(heading.text(), 300) : undefined) ??
+        clean(anchor.text(), 300) ??
+        clean(anchor.attr('title'), 300);
       if (!title || title.length < 4) return;
+      const summary = heading.length
+        ? clean(anchor.find('p').first().text(), SUMMARY_LENGTH)
+        : undefined;
 
       const normalized = normalizeUrl(url.toString());
       if (!found.has(normalized))
-        found.set(normalized, { url: normalized, title });
+        found.set(normalized, {
+          url: normalized,
+          title,
+          ...(summary ? { summary } : {}),
+        });
     });
     return [...found.values()];
   };
 
   const selectors = [
-    'article h1 a[href], article h2 a[href], article h3 a[href], h2 a[href], h3 a[href], a[href]:has(h2), a[href]:has(h3)',
+    'article h1 a[href], article h2 a[href], article h3 a[href], h2 a[href], h3 a[href], a[href]:has(h2), a[href]:has(h3), a[href]:has(h4), a[href]:has(h5), a[href]:has(h6)',
     'article a[href], main a[href]',
   ];
   for (const selector of selectors) {
