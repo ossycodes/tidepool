@@ -6,10 +6,13 @@ tags:
 
 # Changelog
 
-All merged to `main` on 2026-09-29. Newest first. PR #3 doesn't exist (GitHub skipped the number).
+Merged to `main` from 2026-09-29 (#68 on 2026-10-02, #69 on 2026-10-12). Newest first. PR #3 doesn't exist (GitHub skipped the number).
 
 | PR | Change |
 |---|---|
+| #69 | Library and reader: save posts into a Library (shelf, cover and list views, search, favourites, reading status, private collections) and read them in an internal reader with highlights and margin notes; select a passage or ask about the whole article for a streamed answer in a note thread (needs `AI_API_KEY` and `AI_MODEL`) ([[Library and reader]]) |
+| #68 | Fix: sites without RSS take the heading inside card links as each post's title, so scraped titles no longer include dates and teaser text |
+| #67 | Docs: record #65 and #66 |
 | #66 | Fix: feeds whose items carry a structured author (blog.google's `<author><name>…`) failed to parse entirely; the author's name is now read from it, so the Google Ads & Commerce blog can be followed |
 | #65 | Docs: record #63 and #64 |
 | #64 | Fix: the digest scheduling e2e test failed daily from 23:00 Tokyo time (`(hour + 1) % 24` kept the same weekday); the next hour now comes from a real timestamp |
