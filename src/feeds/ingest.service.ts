@@ -170,7 +170,8 @@ export class IngestService {
 
   /**
    * Moves every follower of `fromId` to `toId`, keeping their own name,
-   * pause and filters, then deletes `fromId`. Readers who already follow
+   * pause and filters, then deletes `fromId` unless it holds saved reads or
+   * notes. A retained source has no subscribers and is not scheduled. Readers who already follow
    * both keep their existing subscription.
    */
   private async mergeInto(fromId: string, toId: string): Promise<void> {
@@ -197,7 +198,19 @@ export class IngestService {
           });
         }
       }
-      await tx.blog.delete({ where: { id: fromId } });
+      // Old article IDs/versions must survive automatic source consolidation.
+      // Keeping an orphan source is cheaper and safer than merging private
+      // reading state and annotations onto potentially different article text.
+      const retained = await tx.post.count({
+        where: {
+          blogId: fromId,
+          OR: [
+            { readers: { some: { saved: true } } },
+            { annotations: { some: {} } },
+          ],
+        },
+      });
+      if (!retained) await tx.blog.delete({ where: { id: fromId } });
     });
   }
 

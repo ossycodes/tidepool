@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Eye, Filter, Send } from '@lucide/vue'
 import { computed, onMounted, ref } from 'vue'
+import SavePostButton from '@/components/SavePostButton.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { api, type DigestPreview, type DigestRecord } from '@/lib/api'
 import { hostLabel, plural, postAge, shortDate, timeUntil } from '@/lib/format'
@@ -116,9 +117,10 @@ async function sendPreview() {
         </h2>
         <p class="sheet__host">{{ hostLabel(section.blog.siteUrl) }}</p>
         <div v-for="post in section.posts" :key="post.id" class="sheet__post">
-          <a :href="post.url" target="_blank" rel="noopener" class="sheet__title">{{
+          <RouterLink :to="`/read/${post.id}`" class="sheet__title">{{
             post.title
-          }}</a>
+          }}</RouterLink>
+          <SavePostButton :post-id="post.id" />
           <p class="sheet__meta tabular">
             <template v-if="post.author">{{ post.author }} · </template>{{ postAge(post) }}
           </p>

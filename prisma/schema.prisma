@@ -34,6 +34,10 @@ model User {
 
   subscriptions Subscription[]
   digests       Digest[]
+  library       UserPost[]
+  collections   Collection[]
+  annotations   Annotation[]
+  aiRequests    AiRequest[]
 }
 
 /// Magic-link tokens are keyed by email so the User row is only created once
@@ -117,6 +121,8 @@ model Post {
   url          String
   title        String
   summary      String?
+  /// Untrusted full feed HTML; only rendered after sanitization by ArticleProcessor.
+  feedContent  String?
   author       String?
   publishedAt  DateTime? @db.Timestamptz
   discoveredAt DateTime  @default(now()) @db.Timestamptz
@@ -125,6 +131,9 @@ model Post {
 
   blog        Blog         @relation(fields: [blogId], references: [id], onDelete: Cascade)
   digestItems DigestItem[]
+  content     ArticleContent?
+  readers     UserPost[]
+  annotations Annotation[]
 
   @@unique([blogId, url])
   @@index([blogId, discoveredAt])
@@ -150,4 +159,80 @@ model DigestItem {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   @@id([digestId, postId])
+}
+
+
+model ArticleContent {
+  postId      String   @id
+  html        String
+  text        String
+  version     String
+  readingTime Int
+  fetchedAt   DateTime @default(now()) @db.Timestamptz
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+enum ReadingStatus {
+  UNREAD
+  READING
+  READ
+}
+
+model UserPost {
+  id         String @id @default(cuid())
+  userId     String
+  postId     String
+  saved      Boolean       @default(false)
+  favourite  Boolean       @default(false)
+  status     ReadingStatus @default(UNREAD)
+  progress   Float         @default(0)
+  paragraph  String?
+  createdAt  DateTime      @default(now()) @db.Timestamptz
+  updatedAt  DateTime      @updatedAt @db.Timestamptz
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post       Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  collections Collection[]
+
+  @@unique([userId, postId])
+  @@index([userId, saved, createdAt])
+}
+
+model Collection {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     UserPost[]
+
+  @@unique([userId, name])
+}
+
+model Annotation {
+  id         String   @id @default(cuid())
+  userId     String
+  postId     String
+  paragraph  String?
+  quote      String   @default("")
+  start      Int      @default(0)
+  end        Int      @default(0)
+  prefix     String   @default("")
+  suffix     String   @default("")
+  version    String
+  note       String   @default("")
+  /// Plain text question/answer pairs, private to this reader.
+  messages   Json     @default("[]")
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([userId, postId, createdAt])
+}
+
+model AiRequest {
+  id        String @id @default(cuid())
+  userId    String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, createdAt])
 }

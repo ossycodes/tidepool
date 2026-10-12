@@ -35,3 +35,27 @@ Validation errors are `400`; missing or not-yours is `404`; discovery failures a
 
 Web routes: `/`, `/auth/callback`, `/reading`, `/issue`, `/settings`, `/open`,
 and any `/<domain>/…` path for [[Quick add]].
+
+## Library and reader (feature branch)
+
+All routes require an access token. A reader can access a post from a followed
+blog or their own saved library. Collections, notes and conversations are private.
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/library` | Saved posts with state, reading time and collections |
+| POST | `/library/collections` | `{name}` creates/reuses a named collection |
+| DELETE | `/library/collections/:id` | Remove collection, keep articles (204) |
+| GET | `/library/posts/:id` | Metadata, cached content, state, notes, extraction state and AI availability |
+| PATCH | `/library/posts/:id` | `{saved?, favourite?, status?, progress?, paragraph?, collectionIds?}` |
+| POST | `/library/posts/:id/extract` | Queue/retry extraction (202); poll GET for ready/failed |
+| POST | `/library/posts/:id/notes` | `{paragraph, quote, start, end, version, note?}` validates and saves passage |
+| PATCH | `/library/notes/:id` | `{note}` edits own note (204) |
+| DELETE | `/library/notes/:id` | Delete own note and its conversation (204) |
+| POST | `/library/posts/:id/ask` | `{question, annotationId?, mode?: "quick" \| "deep"}` streams SSE |
+
+Reading status is `UNREAD`, `READING` or `READ`. An empty `collectionIds` removes
+all memberships. SSE events: `thread` contains the note, `delta` contains `{text}`,
+`done` contains the persisted note, and `error` contains `{message}`. Clients must
+receive `done` before treating an answer as saved. Unconfigured AI returns 503;
+quota exhaustion returns 400; unknown/unauthorized posts and notes return 404.

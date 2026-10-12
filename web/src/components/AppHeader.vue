@@ -4,6 +4,7 @@ import LogoMark from '@/components/ui/LogoMark.vue'
 
 const links = [
   { to: '/reading', label: 'Reading list' },
+  { to: '/library', label: 'Library' },
   { to: '/issue', label: 'Next issue' },
   { to: '/settings', label: 'Settings' },
 ]
@@ -115,8 +116,8 @@ const links = [
   }
 
   .nav__link {
-    padding: 0 9px;
-    font-size: 13.5px;
+    padding: 0 7px;
+    font-size: 12px;
   }
 
   .nav__link.is-active::after {

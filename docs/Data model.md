@@ -30,3 +30,18 @@ erDiagram
 > [!warning] Prisma 7
 > `prisma migrate dev` does **not** regenerate the client. Run
 > `npx prisma generate` after changing the schema.
+
+## Library and reader (feature branch)
+
+- `Post.feedContent`: untrusted full feed markup, retained on new posts and only
+  rendered after sanitization.
+- `ArticleContent`: shared immutable reader HTML/text, hash/version, reading time
+  and extraction timestamp, keyed by post. Article HTML has stable `p1…` anchors.
+- `UserPost`: per-reader saved/favourite flags, unread/reading/read status,
+  progress (0–1), last paragraph and collection memberships. Unique user/post.
+- `Collection`: private name (unique per reader) and saved article memberships.
+- `Annotation`: private exact quote, offsets, paragraph, surrounding text,
+  content version, personal note and question/answer history.
+- `AiRequest`: per-reader hourly quota claims, indexed by reader/time. User
+  deletion cascades through all private reading data; post deletion removes
+  its content, state and notes. Collection deletion keeps articles.

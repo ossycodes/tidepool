@@ -250,3 +250,152 @@ export const api = {
   sharedList: (id: string) =>
     request<{ blogs: SharedBlog[] }>('GET', `/shared/${encodeURIComponent(id)}`),
 }
+
+export interface ReadingState {
+  saved: boolean;
+  favourite: boolean;
+  status: 'UNREAD' | 'READING' | 'READ';
+  progress: number;
+  paragraph: string | null;
+  collections: { id: string; name: string }[];
+}
+export interface Collection {
+  id: string;
+  name: string;
+  count: number;
+}
+export interface LibraryItem extends Post {
+  blogTitle: string;
+  readingTime: number | null;
+  state: ReadingState;
+}
+export interface Annotation {
+  id: string;
+  paragraph: string | null;
+  quote: string;
+  start: number;
+  end: number;
+  prefix: string;
+  suffix: string;
+  version: string;
+  note: string;
+  messages: { role: 'user' | 'assistant'; content: string }[];
+}
+export interface ReaderArticle extends Post {
+  blog: { title: string; siteUrl: string };
+  state: ReadingState | null;
+  content: {
+    html: string;
+    text: string;
+    version: string;
+    readingTime: number;
+  } | null;
+  annotations: Annotation[];
+  extraction: 'idle' | 'pending' | 'failed' | 'ready';
+  aiEnabled: boolean;
+}
+export const libraryApi = {
+  list: () =>
+    request<{ items: LibraryItem[]; collections: Collection[] }>(
+      'GET',
+      '/library',
+    ),
+  read: (id: string) =>
+    request<ReaderArticle>('GET', `/library/posts/${encodeURIComponent(id)}`),
+  extract: (id: string) =>
+    request('POST', `/library/posts/${encodeURIComponent(id)}/extract`),
+  update: (
+    id: string,
+    patch: Partial<Omit<ReadingState, 'collections' | 'paragraph'>> & {
+      paragraph?: string | null;
+      collectionIds?: string[];
+    },
+  ) =>
+    request<ReadingState>(
+      'PATCH',
+      `/library/posts/${encodeURIComponent(id)}`,
+      patch,
+    ),
+  collection: (name: string) =>
+    request<Collection>('POST', '/library/collections', { name }),
+  deleteCollection: (id: string) =>
+    request<void>('DELETE', `/library/collections/${encodeURIComponent(id)}`),
+  annotate: (
+    id: string,
+    anchor: {
+      paragraph: string;
+      quote: string;
+      start: number;
+      end: number;
+      version: string;
+      note?: string;
+    },
+  ) =>
+    request<Annotation>(
+      'POST',
+      `/library/posts/${encodeURIComponent(id)}/notes`,
+      anchor,
+    ),
+  note: (id: string, note: string) =>
+    request<void>('PATCH', `/library/notes/${encodeURIComponent(id)}`, {
+      note,
+    }),
+  deleteNote: (id: string) =>
+    request<void>('DELETE', `/library/notes/${encodeURIComponent(id)}`),
+  async ask(
+    id: string,
+    body: { question: string; annotationId?: string; mode: 'quick' | 'deep' },
+    onEvent: (event: string, data: unknown) => void,
+    signal: AbortSignal,
+  ) {
+    const token = getToken();
+    const res = await fetch(
+      `${BASE_URL}/library/posts/${encodeURIComponent(id)}/ask`,
+      {
+        method: 'POST',
+        signal: AbortSignal.any([signal, AbortSignal.timeout(70_000)]),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+      },
+    );
+    if (!res.ok) {
+      if (res.status === 401 && token) onUnauthorized();
+      const data = await res.json().catch(() => null);
+      throw new ApiError(
+        res.status,
+        data?.message ?? 'Could not start the answer.',
+      );
+    }
+    if (!res.body) throw new Error('Streaming is unavailable in this browser.');
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '',
+      completed = false;
+    try {
+      while (true) {
+        const result = await reader.read();
+        buffer += decoder.decode(result.value, { stream: !result.done });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() ?? '';
+        for (const block of events) {
+          const event = block.match(/^event: (.+)$/m)?.[1];
+          const data = block.match(/^data: (.+)$/m)?.[1];
+          if (!event || !data) continue;
+          const parsed = JSON.parse(data);
+          if (event === 'error') throw new Error(parsed.message);
+          if (event === 'done') completed = true;
+          onEvent(event, parsed);
+        }
+        if (result.done) break;
+      }
+      if (!completed)
+        throw new Error('The answer was interrupted. Please try again.');
+    } finally {
+      await reader.cancel().catch(() => {});
+      reader.releaseLock();
+    }
+  },
+};

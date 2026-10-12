@@ -8,6 +8,7 @@ export interface ExtractedPost {
   url: string;
   title: string;
   summary?: string;
+  feedContent?: string;
   author?: string;
   publishedAt?: Date;
 }
@@ -112,6 +113,14 @@ export async function parseFeed(
         item.contentSnippet ?? htmlToText(item.summary),
         SUMMARY_LENGTH,
       ),
+      ...(typeof (item['content:encoded'] ?? item.content) === 'string'
+        ? {
+            feedContent: (item['content:encoded'] ?? item.content).slice(
+              0,
+              2_000_000,
+            ),
+          }
+        : {}),
       author: clean(item.creator, 200),
       publishedAt: toDate(item.isoDate ?? item.pubDate),
     };
@@ -159,6 +168,21 @@ function parseJsonFeed(body: string, feedUrl: string): ParsedFeed {
       url,
       title: clean(item.title, 300) ?? clean(text, 80) ?? url,
       summary: clean(text, SUMMARY_LENGTH),
+      ...(item.content_html
+        ? { feedContent: item.content_html.slice(0, 2_000_000) }
+        : item.content_text
+          ? {
+              feedContent:
+                '<p>' +
+                item.content_text
+                  .slice(0, 2_000_000)
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/\n\n/g, '</p><p>') +
+                '</p>',
+            }
+          : {}),
       author: clean(item.authors?.[0]?.name ?? item.author?.name, 200),
       publishedAt: toDate(item.date_published),
     };

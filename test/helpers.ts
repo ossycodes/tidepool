@@ -9,6 +9,7 @@ import { configureApp } from '../src/app.setup.js';
 import { HttpClient } from '../src/common/http-client.js';
 import { FetchError, type FetchResult } from '../src/common/safe-fetch.js';
 import { DigestProcessor } from '../src/digest/digest.processor.js';
+import { ArticleProcessor } from '../src/library/article.processor.js';
 import { FetchProcessor } from '../src/feeds/fetch.processor.js';
 import { MailService, type MailMessage } from '../src/mail/mail.service.js';
 
@@ -81,6 +82,7 @@ export async function createTestApp() {
   await Promise.all([
     app.get(DigestProcessor).worker.close(),
     app.get(FetchProcessor).worker.close(),
+    app.get(ArticleProcessor).worker.close(),
   ]);
   return { app, mail, http, alerts, moduleRef };
 }
