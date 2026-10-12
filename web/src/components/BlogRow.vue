@@ -10,6 +10,7 @@ import {
   UserMinus,
 } from '@lucide/vue'
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
+import SavePostButton from '@/components/SavePostButton.vue'
 import BlogMonogram from '@/components/ui/BlogMonogram.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiKeywords from '@/components/ui/UiKeywords.vue'
@@ -224,9 +225,10 @@ async function toggle() {
         <p v-if="postsError" class="drawer__note">Couldn't load posts.</p>
         <ul v-else-if="posts?.length" class="posts">
           <li v-for="post in posts" :key="post.id">
-            <a :href="post.url" target="_blank" rel="noopener" class="posts__title">{{
+            <RouterLink :to="`/read/${post.id}`" class="posts__title">{{
               post.title
-            }}</a>
+            }}</RouterLink>
+            <SavePostButton :post-id="post.id" />
             <span class="posts__date tabular">{{ postAge(post) }}</span>
           </li>
         </ul>
@@ -453,6 +455,8 @@ a.row__latest:hover .row__latest-title {
 }
 
 .posts__title {
+  flex: 1;
+  min-width: 0;
   color: var(--ink);
 }
 

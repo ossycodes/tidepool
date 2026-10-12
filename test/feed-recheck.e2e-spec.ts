@@ -178,4 +178,44 @@ describe('Re-checking scraped blogs for feeds (e2e)', () => {
     expect(checked.fetchMode).toBe('SCRAPE');
     expect(Date.now() - checked.feedCheckedAt!.getTime()).toBeLessThan(60_000);
   });
+  it('keeps saved article IDs when a scraped source merges into an existing feed', async () => {
+    const site = `https://saved-merge-${run}.test/`;
+    const feed = `${site}posts.rss`;
+    http.pages.set(site, page());
+    http.pages.set(feed, rss(site, ['x', 'y']));
+    const reader = {
+      Authorization: `Bearer ${(await signIn(app, mail)).accessToken}`,
+    };
+    const scraped = await follow(reader, site);
+    const target = await follow(reader, feed);
+    const post = await prisma.post.findFirstOrThrow({
+      where: { blogId: scraped.id },
+    });
+    await request(app.getHttpServer())
+      .patch(`/library/posts/${post.id}`)
+      .set(reader)
+      .send({ saved: true })
+      .expect(200);
+    await prisma.blog.update({
+      where: { id: scraped.id },
+      data: { feedCheckedAt: WEEK_AGO() },
+    });
+    http.pages.set(site, page('/posts.rss'));
+    await ingest.refresh(scraped.id);
+    expect(
+      await prisma.blog.findUnique({ where: { id: scraped.id } }),
+    ).not.toBeNull();
+    expect(
+      await prisma.subscription.count({ where: { blogId: scraped.id } }),
+    ).toBe(0);
+    await request(app.getHttpServer())
+      .get(`/library/posts/${post.id}`)
+      .set(reader)
+      .expect(200);
+    const blogs = await request(app.getHttpServer())
+      .get('/blogs')
+      .set(reader)
+      .expect(200);
+    expect(blogs.body.map((b: { id: string }) => b.id)).toEqual([target.id]);
+  });
 });

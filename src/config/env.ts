@@ -12,6 +12,10 @@ const baseSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
   JWT_TTL_DAYS: z.coerce.number().int().positive().default(30),
   MAGIC_LINK_TTL_MINUTES: z.coerce.number().int().positive().default(15),
+  /** Optional reading assistant; credentials never reach the browser. */
+  AI_API_KEY: z.string().optional(),
+  AI_MODEL: z.string().optional(),
+  AI_BASE_URL: z.url().default('https://api.together.ai/v1'),
   /**
    * Mail goes through Resend's HTTPS API when this is set, otherwise over
    * SMTP. Production needs the API: Railway blocks outbound SMTP below Pro.

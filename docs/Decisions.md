@@ -94,3 +94,19 @@ sign-in request hung and returned 500 in production. With `RESEND_API_KEY`
 set, `MailService` posts to Resend's API instead; SMTP (Mailpit) stays for
 local development so nothing needs an account to run. The production key is
 send-only, and both paths give up after 15 s so a slow provider fails fast.
+
+## Library content is shared; reading state is private (feature branch)
+
+Article extraction runs on demand in BullMQ, independently of feed discovery and
+email sending, so a difficult source cannot delay a digest. Full content is cached
+once per post and sanitized before storage. Highlights use exact offsets and a
+content hash; stale/fabricated selections are rejected rather than attached to the
+wrong passage. Personal state and collections live separately from subscriptions,
+so unfollowing does not remove saved articles. AI is optional and configured only
+on the API; no provider credentials reach the browser. It cites paragraph IDs and
+labels background knowledge, while the UI reminds readers to check sources.
+
+If a scraped source merges into a known feed, its orphan blog record is retained
+when it holds saved posts or annotations. Its subscriptions move to the feed,
+so the fetch scheduler stops polling the old source. This preserves original
+article IDs and annotation versions without copying notes onto different text.

@@ -1,3 +1,4 @@
+import './styles/books.css'
 import '@fontsource-variable/inter'
 import '@fontsource-variable/newsreader/opsz.css'
 import '@fontsource-variable/newsreader/opsz-italic.css'

@@ -49,6 +49,18 @@ const router = createRouter({
           meta: { title: 'Reading list' },
         },
         {
+          path: 'library',
+          name: 'library',
+          component: () => import('@/views/LibraryView.vue'),
+          meta: { title: 'Your library' },
+        },
+        {
+          path: 'read/:postId',
+          name: 'reader',
+          component: () => import('@/views/ReaderView.vue'),
+          meta: { title: 'Reader' },
+        },
+        {
           path: 'issue',
           name: 'issue',
           component: () => import('@/views/IssueView.vue'),

@@ -65,6 +65,20 @@ issue with a masthead, grouped by blog.
   </tr>
 </table>
 
+## Library and reader
+
+Save articles from your reading list or Next issue into a private Library.
+Browse them as book spines, covers or a list; organise collections, favourite
+articles, and track what you are reading. The internal reader preserves article
+formatting and resumes where you left off. Select a passage to highlight it,
+leave a note, or ask the optional reading assistant.
+
+Apply the library migration with `npm run db:deploy`, regenerate with
+`npx prisma generate`, and restart the API. Article extraction needs Redis.
+To enable AI, set `AI_API_KEY`, `AI_MODEL` and optionally `AI_BASE_URL` on the API.
+Library, reading and personal notes work without AI configuration.
+See [Library and reader](docs/Features/Library%20and%20reader.md) for details.
+
 ## Local setup
 
 ```bash
