@@ -1,16 +1,16 @@
 ---
-status: in-progress
+status: shipped
 type: feature
 area: web
 priority: 1
 effort: L
+pr: 69
+shipped: 2026-10-12
 tags:
   - feature
 ---
 
 # Library and reader
-
-Implementation branch: `feat/library-reader`.
 
 Save articles from a blog's recent posts or Next issue. The Library has shelf,
 cover and list views, search by title/author/blog, favourites, unread/reading/read
@@ -67,5 +67,6 @@ Browser QA uses an isolated test account and a local AI fixture, never a live
 provider key. Verify desktop/mobile, light/dark, reduced motion, native dialog
 focus, passage questions and reload persistence.
 
-This note remains in progress until the branch merges. No production deployment
-has been performed.
+Deployed 2026-10-12: Railway's pre-deploy `npm run db:deploy` applied the
+migration. Production has no `AI_API_KEY`/`AI_MODEL` yet, so passage questions
+show "not configured" while highlights and notes work.
