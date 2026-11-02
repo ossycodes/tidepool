@@ -1,5 +1,7 @@
 # Tidepool
 
+[![Fund my work on FLOSSAfrica](https://flossafrica.com/badge.svg)](https://flossafrica.com/m/ossycodes?p=tidepool)
+
 One email a week with all the new posts from the blogs you follow — even the
 ones without an RSS feed.
 
@@ -199,8 +201,9 @@ link only shows a confirm button, because mail scanners prefetch links.
 
 ## Support
 
-If Tidepool is useful to you, you can support its development on
-[FLOSS Africa](https://flossafrica.com/m/ossycodes).
+If Tidepool is useful to you, you can support its development on FLOSS Africa:
+
+[![Fund my work on FLOSSAfrica](https://flossafrica.com/badge.svg)](https://flossafrica.com/m/ossycodes?p=tidepool)
 
 ## License
 
