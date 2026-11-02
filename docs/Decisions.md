@@ -110,3 +110,13 @@ If a scraped source merges into a known feed, its orphan blog record is retained
 when it holds saved posts or annotations. Its subscriptions move to the feed,
 so the fetch scheduler stops polling the old source. This preserves original
 article IDs and annotation versions without copying notes onto different text.
+
+## AGPL-3.0, not MIT
+
+Tidepool is a hosted service, so a permissive license would let anyone run a
+closed, modified copy against usetidepool.app. AGPL-3.0 makes anyone who serves
+a modified version to other people publish their source under the same terms;
+self-hosting it for yourself carries no obligation. The license is
+`AGPL-3.0-only`, so a future GNU revision doesn't apply without a deliberate
+relicense. Both `package.json` files stay `"private": true`, which only stops
+an accidental npm publish.
