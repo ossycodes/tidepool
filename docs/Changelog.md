@@ -6,10 +6,12 @@ tags:
 
 # Changelog
 
-Merged to `main` from 2026-09-29 (#68 on 2026-10-02, #69 and #70 on 2026-10-12, #71 on 2026-11-02). Newest first. PR #3 doesn't exist (GitHub skipped the number).
+Merged to `main` from 2026-09-29 (#68 on 2026-10-02, #69 and #70 on 2026-10-12, #71 to #73 on 2026-11-02). Newest first. PR #3 doesn't exist (GitHub skipped the number).
 
 | PR | Change |
 |---|---|
+| #73 | README: FLOSS Africa "Fund my work" badge under the title and in Support |
+| #72 | Docs: record #70 and #71 |
 | #71 | Open source under AGPL-3.0: `LICENSE`, license fields in both `package.json` files, a README section on the paid apps Tidepool replaces, and a FLOSS Africa support link |
 | #70 | Docs: record #67, #68 and #69 |
 | #69 | Library and reader: save posts into a Library (shelf, cover and list views, search, favourites, reading status, private collections) and read them in an internal reader with highlights and margin notes; select a passage or ask about the whole article for a streamed answer in a note thread (needs `AI_API_KEY` and `AI_MODEL`) ([[Library and reader]]) |
