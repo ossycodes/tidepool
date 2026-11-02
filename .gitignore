@@ -12,6 +12,9 @@ coverage
 # Local browser QA screenshots
 .playwright-mcp/
 
+# Local launch-video project
+brag-output/
+
 # Obsidian: share vault settings, not personal workspace state
 docs/.obsidian/workspace*.json
 docs/.obsidian/cache

@@ -3,6 +3,19 @@
 One email a week with all the new posts from the blogs you follow — even the
 ones without an RSS feed.
 
+An open-source, self-hostable alternative to [Tentacle](https://usetentacle.app/),
+[Feedbin](https://feedbin.com/), [Inoreader](https://www.inoreader.com/),
+[Feedly](https://feedly.com/), [Mailbrew](https://mailbrew.com/),
+[Blogtrottr](https://blogtrottr.com/) and [Readwise Reader](https://readwise.io/read).
+
+| If you use…                    | Tidepool gives you                                                                  |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| Tentacle, Mailbrew, Blogtrottr | A digest by email on your day and hour, weekly or more often, grouped by blog       |
+| Feedbin, Inoreader, Feedly     | Follow any blog by URL, OPML import/export, keyword filters, rename and pause blogs |
+| Feedly's RSS builder, NewsBlur | Blogs with no feed are watched by checking the page itself                          |
+| Readwise Reader, Matter        | A private library with collections, a reader view, highlights and margin notes      |
+| Readwise's Ghostreader         | Ask about a passage with any OpenAI-compatible model (optional)                     |
+
 - **API** (repo root): NestJS 12 with Postgres (Prisma 7), Redis (BullMQ) and
   SMTP (Nodemailer).
 - **Web app** ([`web/`](web/README.md)): Vue 3 + Vite. Run it with
@@ -183,3 +196,15 @@ who got a digest in the last 6 days are skipped. The job:
 
 Unsubscribe links carry a signed token that can't be used to sign in. The GET
 link only shows a confirm button, because mail scanners prefetch links.
+
+## Support
+
+If Tidepool is useful to you, you can support its development on
+[FLOSS Africa](https://flossafrica.com/m/ossycodes).
+
+## License
+
+Tidepool is free software under the [GNU Affero General Public License v3.0](LICENSE).
+You can self-host, modify and redistribute it. If you run a modified version
+as a service for other people, you must make your source code available to
+them under the same license.
